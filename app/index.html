@@ -1,0 +1,1924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tandem App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0c0b10; --bg2:#14121b; --bg3:#1b1924; --ink:#f3efe7; --mute:#9a95a6; --line:#2a2733;
+  --a:#ff7a4d; --b:#7c6cff; --c:#3ee0b0;
+  --disp:'Inter Tight',system-ui,sans-serif; --sans:'Inter',system-ui,sans-serif;
+  --glass:rgba(20,18,27,.88); --scrim:rgba(6,5,9,.7); --awake:#2f2c3a; --ink2:#c9c3d4; --ts:1;
+  color-scheme:dark;
+}
+html.light{
+  --bg:#f6f3ee; --bg2:#fffdf9; --bg3:#efeae2; --ink:#1b1822; --mute:#6c6677; --line:#e3ddd3;
+  --a:#e8602f; --b:#6a58f0; --c:#159e78;
+  --glass:rgba(255,253,249,.88); --scrim:rgba(40,34,30,.35); --awake:#e6e0f0; --ink2:#4a4556;
+  color-scheme:light;
+}
+html.theme-anim body,html.theme-anim body *{transition:background-color .35s,border-color .35s,color .35s!important}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button,input,textarea{font-family:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
+.hidden{display:none!important}
+
+.top{display:flex;justify-content:space-between;align-items:center;padding:20px 5vw;border-bottom:1px solid var(--line)}
+.logo{font-family:var(--disp);font-size:22px;font-weight:600;display:flex;align-items:center;gap:10px}
+.logo i{display:inline-flex}.logo i b{width:12px;height:12px;border-radius:50%;display:block}
+.logo i b:first-child{background:var(--a)}.logo i b:last-child{background:var(--b);margin-left:-5px;mix-blend-mode:screen}
+.top-r{display:flex;gap:10px;align-items:center;font-size:14px;color:var(--mute)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 24px;border-radius:100px;background:var(--ink);color:var(--bg);font-weight:600;font-size:14px;border:none;cursor:pointer;position:relative;overflow:hidden;transition:transform .2s,opacity .2s}
+.btn span{position:relative;z-index:1}
+.btn::before{content:'';position:absolute;inset:0;background:var(--a);transform:translateY(101%);transition:transform .4s cubic-bezier(.7,0,.2,1)}
+.btn:hover::before{transform:none}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.35;pointer-events:none}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.ghost::before{background:var(--bg3)}
+.btn.sm{padding:9px 16px;font-size:13px}
+.link{background:none;border:none;color:var(--mute);cursor:pointer;font-size:13px;text-decoration:underline;text-underline-offset:3px}
+.link:hover{color:var(--ink)}
+
+.view{min-height:calc(100vh - 71px)}
+
+/* ---------- onboarding ---------- */
+.onb{max-width:680px;margin:0 auto;padding:60px 24px 100px}
+.bar{height:3px;background:var(--line);border-radius:3px;margin-bottom:60px;overflow:hidden}
+.bar b{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--a),var(--b))}
+.qstep{display:none}
+.qstep.on{display:block}
+.qnum{font-size:13px;color:var(--mute);margin-bottom:14px}
+.qstep h2{font-family:var(--disp);font-weight:500;font-size:clamp(32px,5vw,52px);line-height:1.05;letter-spacing:-.03em;margin-bottom:12px}
+.qstep h2 em{color:var(--a)}
+.qstep>p{color:var(--mute);font-size:16px;line-height:1.6;margin-bottom:36px}
+.choices{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.choice{text-align:left;padding:20px;border-radius:18px;border:1px solid var(--line);background:var(--bg2);cursor:pointer;transition:border-color .2s,transform .2s,background .2s}
+.choice:hover{border-color:var(--mute);transform:translateY(-2px)}
+.choice.on{border-color:var(--a);background:#1f1512}
+.choice .ic{font-size:24px;margin-bottom:12px;display:flex;align-items:center;height:30px;line-height:1}
+.choices .choice{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start}
+.yn .choice{display:flex;flex-direction:column;align-items:center;justify-content:flex-start}
+.choice b{display:block;font-weight:600;font-size:15px;margin-bottom:4px}
+.choice small{color:var(--mute);font-size:13px;line-height:1.4}
+.field{position:relative;margin-bottom:14px}
+.field textarea,.field input{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:24px 18px 12px;font-size:16px;outline:none;resize:none;transition:border-color .2s}
+.field textarea{height:120px;padding-top:30px}
+.field label{position:absolute;left:18px;top:18px;color:var(--mute);font-size:15px;pointer-events:none;transition:all .2s}
+.field :focus{border-color:var(--a)}
+.field :focus+label,.field :not(:placeholder-shown)+label{top:8px;font-size:11px;letter-spacing:.06em;color:var(--a)}
+.hint{font-size:13px;color:var(--mute);margin-top:-4px;margin-bottom:20px}
+.range{width:100%;-webkit-appearance:none;appearance:none;height:4px;border-radius:4px;background:var(--line);outline:none;margin-top:30px}
+.range::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--a);cursor:grab;border:5px solid #3a2219}
+.range::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:var(--a);border:none}
+.range-l{display:flex;justify-content:space-between;font-size:13px;color:var(--mute);margin-top:14px}
+.style-read{font-family:var(--disp);font-size:28px;margin-top:30px}
+.style-card{margin-top:18px;padding:20px;border-radius:18px;background:var(--bg2);border:1px solid var(--line)}
+.style-card p{color:var(--mute);font-size:14px;line-height:1.55;margin-bottom:16px}
+.style-card .say{display:grid;gap:8px}
+.style-card .say span{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.style-card .bub{align-self:flex-start;max-width:90%;padding:11px 15px;border-radius:16px 16px 16px 5px;background:var(--bg3);font-size:14px;line-height:1.5}
+.why-ask{display:flex;gap:12px;padding:14px 16px;border-radius:14px;background:var(--bg2);border:1px solid var(--line);font-size:14px;line-height:1.55;color:var(--mute);margin-top:28px}
+.why-ask b{color:var(--ink);font-weight:600}
+.why-ask .ic{flex-shrink:0}
+.intro{max-width:720px;margin:0 auto;padding:70px 24px 100px}
+.intro h1{font-family:var(--disp);font-weight:500;font-size:clamp(38px,6vw,64px);line-height:1;letter-spacing:-.035em;margin-bottom:18px}
+.intro h1 em{color:var(--a);font-style:italic}
+.intro>p{color:var(--mute);font-size:17px;line-height:1.6;max-width:560px;margin-bottom:44px}
+.flow{display:grid;gap:12px;margin-bottom:34px}
+.flow div{display:grid;grid-template-columns:44px 1fr;gap:16px;padding:20px;border-radius:18px;background:var(--bg2);border:1px solid var(--line)}
+.flow i{font-style:normal;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-family:var(--disp);font-weight:600;background:var(--bg3)}
+.flow b{display:block;font-weight:600;margin-bottom:4px}
+.flow small{color:var(--mute);font-size:14px;line-height:1.5}
+.expect{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:40px}
+.intro-row{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.intro-row small{color:var(--mute);font-size:13px}
+.nav-row{display:flex;justify-content:space-between;align-items:center;margin-top:48px}
+
+/* ---------- matching ---------- */
+.searching{display:grid;place-items:center;text-align:center;padding:40px 24px;min-height:calc(100vh - 71px)}
+.radar{width:260px;height:260px;position:relative;margin:0 auto 40px}
+.radar i{position:absolute;inset:0;border:1px solid var(--line);border-radius:50%}
+.radar i:nth-child(2){inset:25%}.radar i:nth-child(3){inset:42%;background:var(--a);border:none}
+.radar .sweep{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 300deg,rgba(124,108,255,.45) 360deg)}
+.radar .blip{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--b);opacity:0}
+.search-t{font-family:var(--disp);font-size:28px;font-weight:500;margin-bottom:10px}
+.search-s{color:var(--mute);font-size:15px;min-height:22px}
+
+/* ---------- reveal ---------- */
+.reveal-wrap{max-width:520px;margin:0 auto;padding:50px 24px 80px;perspective:1200px}
+.reveal-wrap .eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--c);margin-bottom:18px;text-align:center}
+.mcard{background:var(--bg2);border:1px solid var(--line);border-radius:28px;padding:32px;transform-style:preserve-3d}
+.mhead{display:flex;gap:18px;align-items:center;margin-bottom:24px}
+.av{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;font-family:var(--disp);font-size:28px;font-weight:600;color:#fff;flex-shrink:0}
+.av.s{width:40px;height:40px;font-size:16px}
+.mhead h3{font-family:var(--disp);font-size:30px;font-weight:500;letter-spacing:-.02em}
+.mhead small{color:var(--mute);font-size:14px}
+.score{margin-left:auto;text-align:right}
+.score b{font-family:var(--disp);font-size:34px;font-weight:500;display:block;line-height:1}
+.score small{font-size:11px;color:var(--mute);letter-spacing:.1em;text-transform:uppercase}
+.why{display:grid;gap:10px;margin-bottom:24px}
+.why div{display:flex;justify-content:space-between;font-size:14px;padding:12px 14px;background:var(--bg);border-radius:12px}
+.why span:last-child{color:var(--c)}
+.mquote{font-style:italic;color:var(--mute);border-left:2px solid var(--a);padding-left:14px;line-height:1.55;margin-bottom:28px}
+.mact{display:flex;gap:10px}.mact .btn{flex:1}
+
+/* ---------- dashboard ---------- */
+.dash{max-width:820px;margin:0 auto;padding:40px 5vw 80px}
+.tabs{position:sticky;top:12px;z-index:20;display:flex;gap:4px;padding:5px;border-radius:100px;background:var(--glass);backdrop-filter:blur(12px);border:1px solid var(--line);margin:26px 0 22px;width:max-content;max-width:100%}
+.tabs button{position:relative;z-index:1;display:flex;align-items:center;gap:8px;background:none;border:none;color:var(--mute);font-size:14px;font-weight:500;padding:10px 18px;border-radius:100px;cursor:pointer;transition:color .3s}
+.tabs button:hover{color:var(--ink)}
+.tabs button.on{color:var(--bg)}
+.tabs .ti{font-size:14px}
+.tab-pill{position:absolute;top:5px;bottom:5px;left:0;border-radius:100px;background:var(--ink);transition:transform .45s cubic-bezier(.6,1.4,.4,1),width .45s cubic-bezier(.6,1.4,.4,1)}
+.badge{min-width:18px;height:18px;padding:0 5px;border-radius:18px;background:var(--a);color:#000;font-size:11px;font-weight:700;display:grid;place-items:center}
+.tabp{display:none;gap:22px;align-content:start}
+.tabp.on{display:grid}
+.tabp.two{grid-template-columns:1.3fr 1fr;align-items:start}
+.dash:has(.tabp.two.on){max-width:1180px}
+.latest{display:flex;gap:14px;align-items:flex-start}
+.latest .body{flex:1;min-width:0}
+.latest h4{margin-bottom:8px}
+.latest p{font-size:15px;line-height:1.5}
+.latest .btn{flex-shrink:0;align-self:center}
+.panel{background:var(--bg2);border:1px solid var(--line);border-radius:24px;padding:28px}
+.panel h4{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);font-weight:500;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center}
+.greet{display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap;margin-bottom:10px}
+.greet h1{font-family:var(--disp);font-weight:500;font-size:clamp(34px,4.5vw,56px);letter-spacing:-.035em;line-height:1}
+.greet h1 em{color:var(--a);font-style:italic}
+.greet p{color:var(--mute);margin-top:10px}
+.pact-text{font-family:var(--disp);font-size:22px;line-height:1.35;letter-spacing:-.01em}
+.pact-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.tag{font-size:12px;padding:6px 11px;border-radius:100px;border:1px solid var(--line);color:var(--mute)}
+.streak-row{display:flex;gap:26px;align-items:end;margin-bottom:22px}
+.big{font-family:var(--disp);font-size:64px;font-weight:500;line-height:.9;letter-spacing:-.04em}
+.big small{font-size:16px;color:var(--mute);font-weight:400;letter-spacing:0;margin-left:6px}
+.weeks{display:grid;grid-template-columns:repeat(12,1fr);gap:6px}
+.wk{aspect-ratio:1;border-radius:6px;background:var(--bg);border:1px solid var(--line);position:relative}
+.wk.me{background:var(--a);border-color:var(--a)}
+.wk.both{background:linear-gradient(135deg,var(--a) 50%,var(--b) 50%);border:none}
+.wk.them{background:var(--b);border-color:var(--b)}
+.wk.now{outline:2px dashed var(--mute);outline-offset:2px}
+.legend{display:flex;gap:16px;font-size:12px;color:var(--mute);margin-top:14px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+.checkin-cta{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:22px;border-radius:18px;background:linear-gradient(120deg,#2a1810,#1d1830);border:1px solid var(--line)}
+.checkin-cta b{font-family:var(--disp);font-size:20px;font-weight:500;display:block;margin-bottom:4px}
+.checkin-cta small{color:var(--mute)}
+.done-note{display:flex;gap:12px;align-items:center;padding:18px;border-radius:18px;background:var(--bg);border:1px solid var(--line);color:var(--c);font-size:15px}
+
+.log{display:grid;gap:12px;max-height:340px;overflow:auto}
+.log-item{display:flex;gap:12px;padding:14px;background:var(--bg);border-radius:14px}
+.log-item .dot{width:8px;height:8px;border-radius:50%;margin-top:6px;flex-shrink:0}
+.log-item p{font-size:14px;line-height:1.5}
+.log-item small{color:var(--mute);font-size:12px;display:block;margin-top:4px}
+.empty{color:var(--mute);font-size:14px;padding:10px 0}
+
+/* chat */
+.chat{display:flex;flex-direction:column;height:560px}
+.chat-head{display:flex;gap:12px;align-items:center;padding-bottom:18px;border-bottom:1px solid var(--line);margin-bottom:16px}
+.chat-head b{font-weight:600;display:block}
+.chat-head small{color:var(--c);font-size:12px}
+.msgs{flex:1;overflow:auto;display:flex;flex-direction:column;gap:10px;padding-right:4px}
+.msg{max-width:82%;padding:12px 16px;border-radius:18px;font-size:14px;line-height:1.5}
+.msg.them{background:var(--bg3);border-bottom-left-radius:6px;align-self:flex-start}
+.msg.me{background:var(--ink);color:var(--bg);border-bottom-right-radius:6px;align-self:flex-end}
+.msg.sys{align-self:center;font-size:12px;color:var(--mute);background:none;padding:4px}
+.typing{display:inline-flex;gap:4px}
+.typing i{width:6px;height:6px;border-radius:50%;background:var(--mute);animation:bob 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes bob{50%{transform:translateY(-4px);opacity:.4}}
+.quick{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.quick button{font-size:12px;padding:7px 12px;border-radius:100px;border:1px solid var(--line);background:none;cursor:pointer;color:var(--mute)}
+.quick button:hover{color:var(--ink);border-color:var(--mute)}
+.composer{display:flex;gap:8px}
+.composer input{flex:1;background:var(--bg);border:1px solid var(--line);border-radius:100px;padding:13px 18px;font-size:14px;outline:none}
+.composer input:focus{border-color:var(--a)}
+
+.side{display:grid;gap:22px;align-content:start}
+.col{display:grid;gap:22px;align-content:start}
+@media(max-width:900px){.tabp.two{grid-template-columns:minmax(0,1fr)}.chat{height:480px}}
+.tabp,.panel{min-width:0}
+
+
+/* modal */
+.modal{position:fixed;inset:0;background:var(--scrim);backdrop-filter:blur(8px);display:grid;place-items:center;z-index:100;padding:20px}
+.sheet{background:var(--bg2);border:1px solid var(--line);border-radius:28px;padding:34px;width:100%;max-width:520px;max-height:92vh;overflow:auto}
+.sheet h3{font-family:var(--disp);font-weight:500;font-size:30px;letter-spacing:-.02em;margin-bottom:8px}
+.sheet>p{color:var(--mute);margin-bottom:24px;font-size:15px}
+.yn{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px}
+.yn .choice{text-align:center;padding:18px 10px}
+.sheet .row{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
+
+.setup{background:linear-gradient(160deg,#211612,var(--bg2) 55%);border-color:#3a2a22}
+.setup-head{display:flex;justify-content:space-between;align-items:end;gap:14px;margin-bottom:20px}
+.setup-head h3{font-family:var(--disp);font-weight:500;font-size:26px;letter-spacing:-.02em}
+.setup-head small{color:var(--mute);font-size:13px}
+.setup-head h4{justify-content:flex-start}
+.setup-bar{height:4px;background:var(--line);border-radius:4px;overflow:hidden;margin-bottom:18px}
+.setup-bar b{display:block;height:100%;background:linear-gradient(90deg,var(--a),var(--b));width:0}
+.todo{display:grid;grid-template-columns:30px 1fr auto;gap:14px;align-items:center;padding:16px 0;border-top:1px solid var(--line)}
+.todo .tick{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:14px;color:var(--mute)}
+.todo.done .tick{background:var(--c);border-color:var(--c);color:#06261c}
+.todo.cur .tick{border-color:var(--a);color:var(--a)}
+.todo b{display:block;font-weight:600;font-size:15px;margin-bottom:3px}
+.todo.done b{color:var(--mute);text-decoration:line-through;text-decoration-color:var(--line)}
+.todo small{color:var(--mute);font-size:13px;line-height:1.45}
+.todo.locked{opacity:.45}
+/* the suggested next step: 1.15x type, its own surface, and an accent CTA distinct from the white tab pill */
+.todo.cur{grid-template-columns:34px 1fr auto;gap:16px;padding:20px 18px;margin:8px -18px;border:1px solid #5a3a2a;border-top:1px solid #5a3a2a;border-radius:18px;background:linear-gradient(135deg,rgba(255,122,77,.14),rgba(124,108,255,.06))}
+.todo.cur+.todo{border-top-color:transparent}
+.todo.cur .tick{width:34px;height:34px;font-size:16px;border-width:2px;background:rgba(255,122,77,.12)}
+.todo.cur b{font-size:17.25px;margin-bottom:4px}
+.todo.cur small{font-size:15px;color:var(--ink2)}
+.todo.cur .btn{background:var(--a);color:#1a0d06;padding:12px 22px;font-size:15px;box-shadow:0 6px 20px -6px rgba(255,122,77,.6)}
+.todo.cur .btn::before{background:#ff9d78}
+.todo.cur .btn::after{content:'→';position:relative;z-index:1;transition:transform .25s}
+.todo.cur .btn:hover::after{transform:translateX(3px)}
+@media(max-width:600px){.todo.cur{margin:8px -10px;padding:16px 14px;grid-template-columns:34px 1fr}.todo.cur .btn{grid-column:2;justify-self:start}}
+.todo.open b{color:var(--ink)}.todo.open small{opacity:.8}
+.slots{display:grid;gap:10px;margin-bottom:18px}
+.slots .choice{display:flex;justify-content:space-between;align-items:center;padding:16px 18px}
+.slots .choice small{font-size:12px}
+.fit-list{display:grid;gap:8px;margin-bottom:22px;font-size:14px;color:var(--mute);line-height:1.5}
+.fit-list div::before{content:'→ ';color:var(--a)}
+.locked-note{padding:18px;border-radius:18px;background:var(--bg);border:1px dashed var(--line);color:var(--mute);font-size:14px;line-height:1.5}
+.ch-group{margin-bottom:18px}
+.ch-group>span{font-size:12px;color:var(--mute);display:block;margin-bottom:10px}
+.ch-list{display:grid;gap:8px}
+.ch{display:grid;grid-template-columns:22px 34px 1fr auto;gap:12px;align-items:center;padding:11px 14px;border-radius:14px;background:var(--bg);border:1px solid var(--line);font-size:14px}
+.ch .rank{font-family:var(--disp);color:var(--mute);font-size:13px}
+.ch .ico{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--bg3);font-size:16px}
+.ch b{font-weight:600;display:block;font-size:14px}
+.ch small{color:var(--mute);font-size:12px}
+.ch .copy{background:none;border:1px solid var(--line);border-radius:100px;padding:6px 11px;font-size:12px;color:var(--mute);cursor:pointer}
+.ch .copy:hover{color:var(--ink);border-color:var(--mute)}
+.ch.first{border-color:#4a3226}
+.ch-edit{display:grid;gap:8px;margin-bottom:18px;max-height:52vh;overflow:auto}
+.ch-row{display:grid;grid-template-columns:auto 34px 1fr auto;gap:10px;align-items:center;padding:10px 12px;border-radius:14px;background:var(--bg);border:1px solid var(--line)}
+.ch-row.off{opacity:.5}
+.ch-row input[type=text]{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:14px;outline:none;width:100%}
+.ch-row input[type=text]:focus{border-color:var(--a)}
+.ch-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--a)}
+.ch-row .mv{display:flex;flex-direction:column;gap:2px}
+.ch-row .mv button{background:none;border:1px solid var(--line);border-radius:6px;width:26px;height:20px;font-size:10px;color:var(--mute);cursor:pointer}
+.ch-row .mv button:hover{color:var(--ink)}
+.ch-row .mv button:disabled{opacity:.25;pointer-events:none}
+.me-btn{display:flex;align-items:center;gap:10px;background:none;border:1px solid var(--line);border-radius:100px;padding:4px 14px 4px 4px;cursor:pointer;color:var(--ink);font-size:14px;transition:border-color .2s}
+.me-btn:hover{border-color:var(--mute)}
+.pic{width:30px;height:30px;border-radius:50%;background:var(--a) center/cover no-repeat;display:grid;place-items:center;font-family:var(--disp);font-weight:600;font-size:13px;color:#000;flex-shrink:0}
+.photo-row{display:flex;align-items:center;gap:18px;margin-bottom:22px}
+.photo-row .pic{width:84px;height:84px;font-size:32px}
+.photo-row .acts{display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+.photo-row small{color:var(--mute);font-size:12px}
+.sec-t{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin:24px 0 12px}
+.toggle{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:13px 0;border-top:1px solid var(--line);font-size:14px;cursor:pointer}
+.toggle small{display:block;color:var(--mute);font-size:12px;margin-top:2px}
+.toggle input{appearance:none;-webkit-appearance:none;width:42px;height:24px;border-radius:24px;background:var(--line);position:relative;cursor:pointer;flex-shrink:0;transition:background .2s}
+.toggle input::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--ink);transition:transform .25s cubic-bezier(.5,1.6,.4,1)}
+.toggle input:checked{background:var(--a)}
+.toggle input:checked::after{transform:translateX(18px)}
+.toggle input:disabled{opacity:.4}
+.err{color:var(--a);font-size:12px;margin:-6px 0 12px;min-height:0}
+.you-wrap{margin-top:26px}
+.you-wrap .lbl{display:flex;justify-content:space-between;align-items:center;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-bottom:12px}
+.you-card{background:var(--bg);border:1px solid var(--line);border-radius:28px;padding:34px;position:relative;overflow:hidden;text-align:left;width:100%;color:var(--ink);font:inherit;display:block}
+.you-card::before{content:'';position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(var(--a),transparent 70%);opacity:.25;top:-120px;right:-100px;filter:blur(20px);pointer-events:none}
+button.you-card{cursor:pointer;transition:border-color .25s,transform .25s}
+button.you-card:hover{border-color:var(--mute);transform:translateY(-2px)}
+.you-card .mc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;position:relative}
+.you-card .mc-tag{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--mute)}
+.you-card .mc-sub{font-size:13px;color:var(--a);margin-top:6px}
+.you-card .mc-person{display:flex;gap:18px;align-items:center;margin-bottom:26px;position:relative}
+.you-card .pic{width:72px;height:72px;font-size:28px}
+.you-card .pic.none{background:var(--bg2);border:1.5px dashed var(--mute);color:var(--mute);font-size:24px}
+.you-card h5{font-family:var(--disp);font-size:30px;font-weight:400;letter-spacing:-.02em;line-height:1.1}
+.you-card .mc-person small{color:var(--mute);font-size:14px;display:block;margin-top:4px;line-height:1.4}
+.you-card .traits{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px;position:relative}
+.you-card .traits span{font-size:13px;padding:6px 12px;border-radius:100px;background:var(--bg2);border:1px solid var(--line)}
+.you-card .quote{font-family:var(--disp);font-style:italic;font-size:18px;line-height:1.5;color:var(--ink);border-left:2px solid var(--b);padding:2px 0 2px 16px;margin-bottom:22px;position:relative}
+.you-card .quote.empty-q{color:var(--mute)}
+.you-card .you-note{font-size:13px;color:var(--mute);line-height:1.5;position:relative}
+.sheet .you-card{margin-bottom:22px}
+@media(max-width:600px){.you-card{padding:22px;border-radius:22px}.you-card h5{font-size:24px}.you-card .pic{width:60px;height:60px}}
+.wk.frozen{background:#1b2a36;border-color:#3b6a8a;display:grid;place-items:center;font-size:10px}
+.freeze-line{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--mute);margin:-6px 0 20px}
+.freeze-line b{color:#8fd0ff;font-weight:600}
+.welcome{padding:18px 20px;border-radius:18px;background:linear-gradient(120deg,#12242a,#1d1830);border:1px solid var(--line);margin-bottom:14px}
+.welcome b{font-family:var(--disp);font-size:19px;font-weight:500;display:block;margin-bottom:6px}
+.welcome p{color:var(--mute);font-size:14px;line-height:1.55}
+.stuck{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.stuck b{font-family:var(--disp);font-size:19px;font-weight:500;display:block;margin-bottom:4px}
+.stuck small{color:var(--mute);font-size:14px;line-height:1.5}
+.session{display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center}
+.timer{font-family:var(--disp);font-size:44px;font-weight:500;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.session .who{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--mute)}
+.session .who i{width:8px;height:8px;border-radius:50%;background:var(--c);animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.3}}
+.tbar{grid-column:1/-1;height:4px;border-radius:4px;background:var(--line);overflow:hidden}
+.tbar b{display:block;height:100%;background:linear-gradient(90deg,var(--c),var(--b));width:0}
+.min-line{margin-top:12px;font-size:14px;color:var(--mute);line-height:1.5}
+.min-line b{color:var(--c);font-weight:600}
+.sub-q{font-size:15px;font-weight:600;margin:34px 0 14px}
+@media(max-width:600px){.stuck{flex-direction:column;align-items:flex-start}.session{grid-template-columns:1fr auto}.session .timer{font-size:38px}}
+.prompt{padding:14px 16px;border-radius:14px;background:var(--bg);border:1px solid var(--line);font-size:14px;line-height:1.5;margin-bottom:16px}
+.prompt span{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--b);margin-bottom:4px}
+.emos{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.emos button{width:44px;height:44px;border-radius:14px;border:1px solid var(--line);background:var(--bg);font-size:20px;cursor:pointer;transition:transform .2s,border-color .2s}
+.emos button:hover{transform:translateY(-2px)}
+.emos button.on{border-color:var(--a);background:#1f1512;transform:scale(1.08)}
+.voice{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.voice .rec{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:100px;border:1px solid var(--line);background:none;cursor:pointer;font-size:14px}
+.voice .rec.on{border-color:var(--a);color:var(--a)}
+.voice .rec.on::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--a);animation:pulse 1s infinite}
+.voice .chip{font-size:13px;padding:7px 12px;border-radius:100px;background:var(--bg3);display:inline-flex;gap:8px;align-items:center}
+.voice .chip button{background:none;border:none;color:var(--mute);cursor:pointer}
+.cd{color:var(--a);font-variant-numeric:tabular-nums}
+details.more{border:1px dashed var(--line);border-radius:24px}
+details.more>summary{list-style:none;cursor:pointer;padding:18px 24px;color:var(--mute);font-size:14px;display:flex;justify-content:space-between;align-items:center}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary::after{content:'+';font-size:20px;transition:transform .3s}
+details.more[open]>summary::after{transform:rotate(45deg)}
+details.more>.panel{border:none;border-top:1px solid var(--line);border-radius:0 0 24px 24px}
+.seg-opt{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 4px}
+.seg-opt button{padding:9px 14px;border-radius:100px;border:1px solid var(--line);background:none;color:var(--mute);font-size:13px;cursor:pointer}
+.seg-opt button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tips{display:grid;gap:10px;margin-bottom:22px}
+.tips div{display:grid;grid-template-columns:34px 1fr;gap:12px;padding:14px;border-radius:14px;background:var(--bg);border:1px solid var(--line)}
+.tips i{font-style:normal;font-size:20px}
+.tips b{display:block;font-size:14px;font-weight:600;margin-bottom:3px}
+.tips small{color:var(--mute);font-size:13px;line-height:1.5}
+.season-stats{display:flex;gap:24px;margin:6px 0 22px}
+.season-stats div b{font-family:var(--disp);font-size:40px;font-weight:500;display:block;line-height:1}
+.season-stats div small{color:var(--mute);font-size:12px}
+.emoji-pop{position:fixed;pointer-events:none;z-index:200;font-size:28px}
+.ring-pop{position:fixed;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;border:3px solid var(--c);pointer-events:none;z-index:200}
+body.calm *,body.calm *::before,body.calm *::after{animation:none!important;transition:none!important}
+/* light theme overrides for hand-tuned dark tints */
+html.light .choice.on,html.light .emos button.on,html.light .lang-chips button.on{background:#fdeee6}
+html.light .range::-webkit-slider-thumb{border-color:#fbd9c9}
+html.light .checkin-cta{background:linear-gradient(120deg,#fde9df,#ece8ff)}
+html.light .setup{background:linear-gradient(160deg,#fdebe2,var(--bg2) 55%);border-color:#f1d6c8}
+html.light .todo.cur{border-color:#f2c4ae}
+html.light .todo.cur .btn{color:#fff}
+html.light .todo.cur .btn::before{background:#d4522a}
+html.light .ch.first{border-color:#f1d0c0}
+html.light .wk.frozen{background:#e3eef6;border-color:#9cc0d8}
+html.light .welcome{background:linear-gradient(120deg,#e2f4ef,#ece8ff)}
+html.light .tz-warn{background:#fdf2e2;border-color:#f0d6a8;color:#8a5a14}
+html.light .milestone{border-color:#9fd8c4}
+html.light .mp-sec.danger .mp-h{color:#c8431c}
+html.light .confirm .btn.yes{color:#fff}
+html.light .modal .sheet,html.light .tabs{box-shadow:0 20px 50px -20px rgba(40,30,20,.18)}
+/* text size: continuous scale via --ts (1 → 1.3). zoom keeps px layout proportional; body class is .bigtext — .big is the stat-number style */
+.view,.modal .sheet{zoom:var(--ts)}
+body.bigtext .msg,body.bigtext .choice small,body.bigtext .todo small,body.bigtext .toggle small{line-height:1.65}
+.seg{display:flex;gap:4px;padding:4px;border-radius:100px;background:var(--bg);border:1px solid var(--line);flex-shrink:0}
+.seg button{border:none;background:none;color:var(--mute);font:500 13px var(--sans);padding:8px 14px;border-radius:100px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .25s,color .25s}
+.seg button.on{background:var(--ink);color:var(--bg)}
+.tsize{padding:13px 0;border-top:1px solid var(--line);font-size:14px}
+.tsize-h{display:flex;justify-content:space-between;align-items:baseline;gap:14px}
+.tsize-h small{display:block;color:var(--mute);font-size:12px;margin-top:2px}
+.tsize-h output{font-family:var(--disp);font-weight:500;font-size:15px;color:var(--ink);font-variant-numeric:tabular-nums}
+.tsize-r{display:flex;align-items:center;gap:14px;margin-top:14px}
+.tsize-r .aa{font-family:var(--disp);color:var(--mute);line-height:1}
+.tsize input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:24px;background:none;cursor:pointer;--p:0%}
+.tsize input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:6px;background:linear-gradient(90deg,var(--a) var(--p),var(--line) var(--p))}
+.tsize input[type=range]::-moz-range-track{height:6px;border-radius:6px;background:linear-gradient(90deg,var(--a) var(--p),var(--line) var(--p))}
+.tsize input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--ink);margin-top:-8px;box-shadow:0 2px 8px rgba(0,0,0,.3);transition:transform .2s}
+.tsize input[type=range]::-moz-range-thumb{width:22px;height:22px;border:none;border-radius:50%;background:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.tsize input[type=range]:active::-webkit-slider-thumb{transform:scale(1.15)}
+.tsize-ticks{display:flex;justify-content:space-between;margin:6px 32px 0 30px;font-size:11px;color:var(--mute)}
+.tsize-ticks span{cursor:pointer}.tsize-ticks span.on{color:var(--ink)}
+.tsize-prev{margin-top:14px;padding:14px 16px;border-radius:14px;background:var(--bg);border:1px solid var(--line);font-size:calc(14px*var(--ts));line-height:1.5;color:var(--mute)}
+.tsize-prev b{color:var(--ink);font-weight:600}
+.msg .by{display:block;font-size:11px;font-weight:600;margin-bottom:3px;letter-spacing:.02em}
+.avs-stack{display:flex}.avs-stack .av+.av{margin-left:-12px;border:2px solid var(--bg2)}
+.trio-box{padding:18px;border-radius:18px;background:var(--bg);border:1px dashed var(--line);margin-bottom:18px}
+.trio-box b{font-family:var(--disp);font-size:18px;font-weight:500;display:block;margin-bottom:6px}
+.trio-box p{color:var(--mute);font-size:14px;line-height:1.55;margin-bottom:14px}
+.trio-steps{display:flex;gap:8px;margin-bottom:22px}
+.trio-steps span{flex:1;height:4px;border-radius:4px;background:var(--line)}
+.trio-steps span.on{background:linear-gradient(90deg,var(--a),var(--b))}
+.waiting{display:flex;gap:12px;align-items:center;padding:16px;border-radius:14px;background:var(--bg);border:1px solid var(--line);color:var(--mute);font-size:14px;margin-bottom:18px}
+.tz-hint{display:block;margin-top:6px;font-size:12px;opacity:.75}
+.tz-warn{padding:12px 14px;border-radius:12px;background:#221a10;border:1px solid #4a3522;color:#f4c38a;font-size:13px;line-height:1.5;margin-bottom:20px}
+.tz-line{font-size:13px;color:var(--mute);margin-top:-6px;margin-bottom:16px}
+.tz-line b{color:var(--ink);font-weight:500}
+.lang-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.lang-chips button{padding:9px 14px;border-radius:100px;border:1px solid var(--line);background:var(--bg2);color:var(--ink);font-size:14px;cursor:pointer;transition:border-color .2s,background .2s}
+.lang-chips button.on{border-color:var(--a);background:#1f1512}
+.lang-chips button.on::before{content:'✓ ';color:var(--a)}
+.lang-add{display:flex;gap:8px;margin-bottom:6px}
+.lang-add input{flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:100px;padding:10px 16px;font-size:14px;outline:none}
+.lang-add input:focus{border-color:var(--a)}
+.sel{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:24px 18px 10px;font-size:16px;color:var(--ink);outline:none;appearance:none}
+.sel-lbl{top:8px!important;font-size:11px!important;letter-spacing:.06em;color:var(--a)!important}
+.ov{margin:4px 0 20px}
+.ov-row{display:grid;grid-template-columns:92px 1fr;gap:10px;align-items:center;margin-bottom:6px}
+.ov-name{font-size:12px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px}
+.ov-name i{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ov-name b{color:var(--ink);font-weight:500}
+.ov-cells{display:grid;grid-template-columns:repeat(24,1fr);gap:2px;position:relative}
+.ov-cells span{height:18px;border-radius:3px;background:var(--bg3);position:relative}
+.ov-cells span.awake{background:var(--awake)}
+.ov-cells span.pref{background:var(--pc,var(--b));opacity:.85}
+.ov-row.sum .ov-cells span{height:24px;background:transparent;border:1px dashed var(--line)}
+.ov-row.sum .ov-cells span.ok{background:rgba(62,224,176,.18);border:1px solid rgba(62,224,176,.35)}
+.ov-row.sum .ov-cells span.best{background:var(--c);border-color:var(--c)}
+.ov-row.sum .ov-cells span.ok,.ov-row.sum .ov-cells span.best{cursor:pointer}
+.ov-row.sum .ov-cells span.ok:hover,.ov-row.sum .ov-cells span.best:hover{outline:2px solid var(--ink);outline-offset:1px}
+.ov-axis{display:grid;grid-template-columns:repeat(24,1fr);font-size:10px;color:var(--mute);margin-left:102px;margin-bottom:6px}
+.ov-axis span{text-align:left}
+.ov-now{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--a);border-radius:2px;pointer-events:none}
+.ov-legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--mute);margin-top:12px}
+.ov-legend i{display:inline-block;width:12px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.ov-sum{font-size:14px;line-height:1.55;margin-top:14px;padding:12px 14px;border-radius:12px;background:var(--bg);border:1px solid var(--line)}
+.ov-sum b{color:var(--c);font-weight:600}
+.ov-tip{position:fixed;z-index:300;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;line-height:1.5;padding:8px 11px;border-radius:10px;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+@media(max-width:600px){.ov-row{grid-template-columns:62px 1fr;gap:6px}.ov-axis{margin-left:68px}.ov-axis span:nth-child(odd){visibility:hidden}.ov-cells{gap:1px}}
+.pf-host h3{font-family:var(--disp);font-weight:500;font-size:30px;letter-spacing:-.02em;margin-bottom:8px}
+.pf-host #pfForm>p{color:var(--mute);margin-bottom:24px;font-size:15px}
+.pf-host .you-card{margin-bottom:22px}
+.pf-host .row{display:flex;gap:10px;justify-content:flex-end;position:sticky;bottom:12px;padding:12px;margin:22px -12px -12px;border-radius:18px;background:var(--glass);backdrop-filter:blur(10px)}
+@media(min-width:901px){.tabp[data-tab="you"].on{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)}.tabp[data-tab="you"] #pfHost{grid-row:span 3}}
+@media(max-width:600px){.pf-host .row{bottom:92px}}
+.dash:has(.tabp[data-tab="you"].on){max-width:1180px}
+.grp{padding-top:28px;margin-top:28px;border-top:1px solid var(--line)}
+.grp:first-of-type{border-top:none;margin-top:8px;padding-top:0}
+.grp-h{display:flex;gap:14px;align-items:flex-start;margin-bottom:14px}
+.grp-n{width:26px;height:26px;border-radius:50%;background:var(--bg3);color:var(--mute);display:grid;place-items:center;font-size:12px;font-weight:600;flex-shrink:0;margin-top:1px}
+.grp-h b{display:block;font-size:16px;font-weight:600;margin-bottom:2px}
+.grp-h small{color:var(--mute);font-size:13px;line-height:1.45}
+.grp .field{margin-bottom:10px}
+.grp .tz-line{margin:0;font-size:13px;line-height:1.5}
+.grp .lang-chips{gap:6px;margin-bottom:12px}
+.grp .lang-chips button{padding:7px 12px;font-size:13px}
+.grp .lang-add input{padding:9px 14px;font-size:13px}
+.qstep[data-step="5"] .why-ask{margin-top:32px}
+.nm-h{font-family:var(--disp);font-weight:500;font-size:clamp(32px,5vw,46px);letter-spacing:-.03em;line-height:1.05;margin-bottom:12px;text-align:center}
+.nm-h em{color:var(--a)}
+.nm-p{color:var(--mute);font-size:15px;line-height:1.6;text-align:center;margin-bottom:28px}
+.nm-list{display:grid;gap:10px;margin-bottom:26px}
+.nm-opt{display:grid;grid-template-columns:40px 1fr auto;gap:14px;align-items:center;padding:16px 18px;border-radius:18px;background:var(--bg2);border:1px solid var(--line);text-align:left;cursor:pointer;transition:border-color .2s,transform .2s;width:100%;color:var(--ink);font:inherit}
+.nm-opt:hover{border-color:var(--mute);transform:translateY(-2px)}
+.nm-opt .ic{width:40px;height:40px;border-radius:12px;background:var(--bg3);display:grid;place-items:center;font-size:18px}
+.nm-opt b{display:block;font-size:15px;font-weight:600;margin-bottom:3px}
+.nm-opt small{color:var(--mute);font-size:13px;line-height:1.45}
+.nm-opt .gain{font-size:12px;font-weight:600;color:var(--c);white-space:nowrap}
+.nm-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.drawer-scrim{position:fixed;inset:0;background:rgba(6,5,9,.45);z-index:140}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,100%);background:var(--bg2);border-left:1px solid var(--line);z-index:150;display:flex;flex-direction:column;visibility:hidden;box-shadow:-20px 0 60px rgba(0,0,0,.4)}
+.drawer-head{display:flex;justify-content:space-between;align-items:flex-start;padding:26px 26px 16px;border-bottom:1px solid var(--line)}
+.drawer-head small{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute)}
+.drawer-head h3{font-family:var(--disp);font-weight:500;font-size:26px;letter-spacing:-.02em;margin-top:4px}
+.drawer-x{background:none;border:1px solid var(--line);color:var(--mute);width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:14px}
+.drawer-x:hover{color:var(--ink);border-color:var(--mute)}
+.drawer-body{flex:1;overflow:auto;padding:18px 26px 40px;scrollbar-width:none}
+.drawer-body::-webkit-scrollbar{display:none}
+.tsec{border-bottom:1px solid var(--line)}
+.tsec>summary{list-style:none;cursor:pointer;padding:16px 0;display:flex;align-items:center;gap:12px;font-weight:600;font-size:15px}
+.tsec>summary::-webkit-details-marker{display:none}
+.tsec>summary .ti{width:34px;height:34px;border-radius:10px;background:var(--bg3);display:grid;place-items:center;font-size:16px;flex-shrink:0}
+.tsec>summary .now{margin-left:auto;font-size:11px;font-weight:600;color:var(--bg);background:var(--c);padding:3px 8px;border-radius:100px}
+.tsec>summary::after{content:'+';margin-left:auto;color:var(--mute);font-size:18px;transition:transform .3s}
+.tsec>summary .now+*{display:none}
+.tsec:has(.now)>summary::after{display:none}
+.tsec>summary .now~*{display:none}
+.tsec[open]>summary::after{transform:rotate(45deg)}
+.tsec .tl{display:grid;gap:10px;padding:0 0 18px}
+.tsec .tl div{display:grid;grid-template-columns:24px 1fr;gap:10px;font-size:14px;line-height:1.5}
+.tsec .tl div b{display:block;font-weight:600;margin-bottom:2px}
+.tsec .tl div small{color:var(--mute);font-size:13px}
+.tsec .try{display:flex;flex-direction:column;gap:6px;padding:0 0 18px}
+.tsec .try span{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-bottom:2px}
+.tsec .try button{text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:11px 14px;font-size:14px;line-height:1.45;color:var(--ink);cursor:pointer}
+.tsec .try button:hover{border-color:var(--a)}
+.tearlier{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin:26px 0 2px}
+.tlocked{margin-top:22px;padding:14px 16px;border-radius:14px;border:1px dashed var(--line);color:var(--mute);font-size:13px;line-height:1.5}
+.tips-fab{position:fixed;right:22px;bottom:22px;z-index:60;display:flex;align-items:center;gap:8px;padding:12px 18px;border-radius:100px;background:var(--bg3);border:1px solid var(--line);color:var(--ink);font-size:14px;cursor:pointer;box-shadow:0 10px 30px rgba(0,0,0,.4);transition:border-color .2s,transform .2s}
+.tips-fab:hover{border-color:var(--mute);transform:translateY(-2px)}
+.tips-fab b{font-weight:600}
+.tips-fab.ping{border-color:var(--c)}
+.tips-fab.ping::after{content:'';position:absolute;top:6px;right:8px;width:8px;height:8px;border-radius:50%;background:var(--c)}
+.tip-link{background:none;border:none;color:var(--mute);font-size:12px;cursor:pointer;padding:0;margin:0 0 8px;text-align:left}
+.tip-link:hover{color:var(--ink)}
+@media(max-width:600px){.tips-fab{bottom:96px;right:14px;padding:10px 14px}.tips-fab b{display:none}.drawer-head{padding:20px 18px 14px}.drawer-body{padding:14px 18px 40px}}
+.milestone{position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:160;display:flex;flex-direction:column;gap:3px;min-width:280px;max-width:calc(100% - 32px);padding:14px 20px;border-radius:18px;background:var(--bg3);border:1px solid #3a6b5b;box-shadow:0 16px 40px rgba(0,0,0,.5)}
+.milestone b{font-size:15px;font-weight:600}
+.milestone small{font-size:13px;color:var(--mute)}
+.new-pill{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:100px;background:var(--c);color:#062a1f;font-size:10px;font-weight:700;letter-spacing:.08em;vertical-align:1px}
+.panel.is-new{border-color:rgba(62,224,176,.45);box-shadow:0 0 0 4px rgba(62,224,176,.08)}
+.tabs button .tab-dot{position:absolute;top:6px;right:8px;width:7px;height:7px;border-radius:50%;background:var(--c)}
+.greet-row{display:flex;gap:22px;align-items:center}
+.greet-row h1{text-wrap:balance}
+.greet-row h1 .hi{display:block;font-size:.42em;font-weight:400;letter-spacing:-.01em;color:var(--mute);margin-bottom:.3em}
+.greet-row h1 em{padding-right:.04em}
+.greet-row #dSub{margin-top:12px;font-size:15px;text-wrap:balance}
+.greet-row .peer-links{margin-top:10px}
+.peer-stack{display:flex;flex-shrink:0}
+.peer-stack button{width:76px;height:76px;border-radius:50%;padding:0;border:3px solid var(--bg);background:var(--bg3) center/cover;cursor:pointer;transition:transform .25s;position:relative}
+.peer-stack button+button{margin-left:-22px}
+.peer-stack button:hover{transform:translateY(-3px) scale(1.04);z-index:2}
+.peer-stack button .on{position:absolute;right:3px;bottom:3px;width:14px;height:14px;border-radius:50%;background:var(--c);border:3px solid var(--bg)}
+.peer-links{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px}
+.peer-links button{background:none;border:none;color:var(--ink);font-size:14px;cursor:pointer;padding:0;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:4px}
+.peer-links button:hover{text-decoration-color:var(--a)}
+.peer-sheet{max-width:480px;padding:0;overflow:auto}
+.peer-hero{height:120px;position:relative}
+.peer-hero .x{position:absolute;top:14px;right:14px}
+.peer-main{padding:0 30px 30px;margin-top:-54px;position:relative}
+.peer-pic{width:108px;height:108px;border-radius:50%;border:4px solid var(--bg2);background:var(--bg3) center/cover;margin-bottom:14px}
+.peer-main h3{font-family:var(--disp);font-weight:500;font-size:32px;letter-spacing:-.02em;margin-bottom:4px}
+.peer-main .meta{color:var(--mute);font-size:14px;margin-bottom:16px}
+.peer-main .traits{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
+.peer-main .traits span{font-size:13px;padding:6px 12px;border-radius:100px;background:var(--bg);border:1px solid var(--line)}
+.peer-main .quote{font-style:italic;font-size:17px;line-height:1.5;border-left:2px solid var(--b);padding-left:14px;margin-bottom:20px}
+.peer-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+.peer-stats div{padding:12px;border-radius:14px;background:var(--bg);border:1px solid var(--line)}
+.peer-stats b{font-family:var(--disp);font-size:22px;font-weight:500;display:block}
+.peer-stats small{color:var(--mute);font-size:12px}
+.peer-note{font-size:12px;color:var(--mute);line-height:1.5}
+@media(max-width:600px){.peer-stack button{width:58px;height:58px}.greet-row{flex-direction:column;align-items:flex-start;gap:16px}.peer-main{padding:0 20px 24px}}
+.ps-line{color:var(--mute);font-size:14px;line-height:1.6;margin-bottom:16px}
+.mp-sec{padding:18px 0;border-top:1px solid var(--line)}
+.mp-sec:first-of-type{border-top:none}
+.mp-h{font-weight:600;font-size:15px;margin-bottom:6px}
+.mp-sec p{color:var(--mute);font-size:14px;line-height:1.55;margin-bottom:12px}
+.mp-sec .trio-box{margin:0}
+.mp-sec.danger .mp-h{color:#ff9d78}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.confirm .ask{font-size:13px;color:var(--ink);width:100%;margin-bottom:4px}
+.confirm .btn.yes{background:var(--a);color:#1a0d06}
+.danger .confirm .btn.yes{background:#e5484d;color:#fff}
+.tabp[data-tab="you"].on{grid-template-columns:200px minmax(0,1fr)!important;align-items:start}
+.tabp[data-tab="you"] #pfHost{grid-row:auto!important}
+.ynav{position:sticky;top:84px;display:flex;flex-direction:column;gap:4px}
+.ynav button{display:flex;align-items:center;gap:10px;text-align:left;background:none;border:none;color:var(--mute);font-size:14px;padding:11px 14px;border-radius:14px;cursor:pointer;transition:background .2s,color .2s}
+.ynav button:hover{color:var(--ink);background:var(--bg2)}
+.ynav button.on{color:var(--ink);background:var(--bg2);box-shadow:inset 3px 0 0 var(--a)}
+.ybody{padding:30px}
+.ybody .ysec,.ybody #pfForm>.ysec{display:none}
+.ybody .ysec.on,.ybody #pfForm>.ysec.on{display:block}
+.ysec h3{font-family:var(--disp);font-weight:500;font-size:28px;letter-spacing:-.02em;margin-bottom:6px}
+.ysub{color:var(--mute);font-size:14px;line-height:1.55;margin-bottom:22px}
+.yrow{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px 0;border-top:1px solid var(--line)}
+.yrow b{display:block;font-weight:600;font-size:15px;margin-bottom:3px}
+.yrow small{color:var(--mute);font-size:13px;line-height:1.5}
+.ybody #pfForm .row{display:none}
+.ybody.formsec #pfForm .row{display:flex}
+#mProfile .ysec{margin-bottom:26px}
+#mProfile .ysec h3{font-size:22px}
+@media(max-width:900px){.tabp[data-tab="you"].on{grid-template-columns:minmax(0,1fr)!important}
+  .ynav{position:static;flex-direction:row;overflow-x:auto;gap:6px;scrollbar-width:none;margin:0 -4px;padding:0 4px}
+  .ynav::-webkit-scrollbar{display:none}
+  .ynav button{white-space:nowrap;border:1px solid var(--line);border-radius:100px;padding:9px 14px}
+  .ynav button.on{box-shadow:none;border-color:var(--a)}}
+@media(max-width:600px){.ybody{padding:20px}}
+.confetti{position:fixed;pointer-events:none;z-index:200;width:8px;height:12px;border-radius:2px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:100px;font-size:14px;font-weight:500;z-index:150}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media(max-width:600px){
+  .top{padding:16px}
+  .onb,.intro,.reveal-wrap{padding-left:16px;padding-right:16px}
+  .onb{padding-top:36px}.bar{margin-bottom:36px}.intro{padding-top:40px}
+  .choices{grid-template-columns:1fr 1fr!important}
+  .choice{padding:16px}
+  .flow div{grid-template-columns:36px 1fr;padding:16px;gap:12px}.flow i{width:36px;height:36px}
+  .dash{padding:24px 16px 110px}
+  .tabp{gap:16px}
+  .tabs{position:fixed;top:auto;bottom:calc(10px + env(safe-area-inset-bottom));left:12px;right:12px;width:auto;margin:0;justify-content:space-between;background:var(--glass);box-shadow:0 10px 30px rgba(0,0,0,.5)}
+  .tabs button{flex:1;flex-direction:column;gap:2px;padding:8px 4px;font-size:11px;border-radius:22px}
+  .tabs .ti{font-size:17px}
+  .tab-pill{border-radius:22px}
+  .badge{position:absolute;top:3px;right:calc(50% - 22px);min-width:16px;height:16px;font-size:10px}
+  .latest{flex-direction:column}.latest .btn{align-self:flex-start}
+  .greet h1{font-size:32px}
+  .panel{padding:20px;border-radius:20px}
+  .mcard,.sheet{padding:22px;border-radius:22px}
+  .mhead{flex-wrap:wrap}.score{margin-left:0;width:100%;display:flex;align-items:baseline;gap:8px;text-align:left}
+  .mact{flex-direction:column-reverse}
+  .todo{grid-template-columns:30px 1fr}.todo .btn{grid-column:2;justify-self:start}
+  .setup-head{flex-direction:column;align-items:flex-start;gap:6px}.setup-head>div{width:100%}
+  .todo{align-items:start}
+  .checkin-cta{flex-direction:column;align-items:flex-start}
+  .streak-row{gap:18px}.big{font-size:52px}
+  .weeks{gap:4px}.wk{border-radius:4px}
+  .msg{max-width:90%}
+  .ch{grid-template-columns:18px 30px minmax(0,1fr) auto;gap:10px;padding:10px 12px}.ch small{overflow-wrap:anywhere}
+  .ch-row{grid-template-columns:auto 30px minmax(0,1fr) auto;gap:8px;padding:8px 10px}
+  .yn .choice{padding:14px 6px}.yn .choice b{font-size:13px}
+  .sheet h3{font-size:24px}
+  .modal{align-items:end;padding:10px}.sheet{max-height:92vh;overflow:auto}
+  .slots .choice{flex-wrap:wrap;gap:6px}
+  .toast{max-width:calc(100% - 32px);text-align:center}
+}
+
+/* themed scrollbars */
+*{scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:10px;border:3px solid transparent;background-clip:padding-box}
+::-webkit-scrollbar-thumb:hover{background:var(--mute);background-clip:padding-box;border:3px solid transparent}
+::-webkit-scrollbar-button{display:none;height:0;width:0}
+::-webkit-scrollbar-corner{background:transparent}
+.sheet{scrollbar-width:none}.sheet::-webkit-scrollbar{display:none}
+html{scrollbar-color:var(--line) var(--bg)}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <a href="../" class="logo"><i><b></b><b></b></i>Tandem</a>
+  <div class="top-r" id="topR"></div>
+</header>
+
+<!-- INTRO -->
+<main class="view hidden" id="vIntro">
+  <div class="intro">
+    <h1>One person, one goal, <em>regular check-ins</em>.</h1>
+    <p>Tandem is built for ADHD brains. You're paired with one partner who has ADHD too, so you get someone who understands the Monday-motivation, Thursday-disappeared pattern. Small steps, forgiving streaks, and company when you're stuck.</p>
+    <div class="flow">
+      <div><i>1</i><span><b>Answer 6 quick questions</b><small>Your goal, your rhythm, how your energy works, the tone you like, and when you're free. About a minute.</small></span></div>
+      <div><i>2</i><span><b>Meet your match</b><small>We suggest one partner and show you why. Not right? Ask for someone else, as often as you like.</small></span></div>
+      <div><i>3</i><span><b>Show up, even in a small way</b><small>Each period you tell each other how it went. A small version counts, a missed week doesn't reset anything, and you can co-work when starting is hard.</small></span></div>
+    </div>
+    <div class="expect"><span class="tag">🧠 Everyone here has ADHD</span><span class="tag">⏱ One-tap check-ins</span><span class="tag">🔒 Only your partner sees your goal</span><span class="tag">↻ Rematch or stop any time</span><span class="tag">✦ Free</span></div>
+    <div class="intro-row"><button class="btn" id="begin"><span>Let's start →</span></button><small>You can change any answer later.</small></div>
+  </div>
+</main>
+
+<!-- ONBOARDING -->
+<main class="view hidden" id="vOnb">
+  <div class="onb">
+    <div class="bar"><b id="bar"></b></div>
+
+    <div class="qstep" data-step="0">
+      <div class="qnum">1 of 6</div>
+      <h2>What do you want to <em>get done</em>?</h2>
+      <p>Be specific. "Run a half marathon by March" beats "get fit". Your partner sees this.</p>
+      <div class="field"><textarea id="fGoal" placeholder=" " maxlength="180"></textarea><label for="fGoal">My goal</label></div>
+      <div class="hint" id="goalCount">0 / 180</div>
+      <div class="field"><input id="fMin" placeholder=" " maxlength="100"><label for="fMin">Smallest version, for a bad day (optional)</label></div>
+      <div class="hint">e.g. "Put my running shoes on and walk 10 minutes." On low days, this still counts.</div>
+      <div class="choices" id="cat">
+        <button class="choice" data-v="fitness"><span class="ic">🏃</span><b>Fitness</b><small>Training, health, habits</small></button>
+        <button class="choice" data-v="writing"><span class="ic">✍️</span><b>Writing</b><small>Books, essays, journaling</small></button>
+        <button class="choice" data-v="code"><span class="ic">🛠</span><b>Side project</b><small>Apps, art, a business</small></button>
+        <button class="choice" data-v="lang"><span class="ic">🗣</span><b>Language</b><small>Speaking, study streaks</small></button>
+        <button class="choice" data-v="money"><span class="ic">💸</span><b>Finances</b><small>Saving, budgets, debt</small></button>
+        <button class="choice" data-v="study"><span class="ic">📚</span><b>Study</b><small>Exams, courses, thesis</small></button>
+      </div>
+      <div class="why-ask"><span class="ic">💡</span><span><b>Why we ask:</b> your partner will be working on something similar, so they understand the effort. Your goal also becomes your pact, the thing you check in against. The small version keeps you in the game on the days the full goal feels impossible.</span></div>
+    </div>
+
+    <div class="qstep" data-step="1">
+      <div class="qnum">2 of 6</div>
+      <h2>How often should you <em>check in</em>?</h2>
+      <p>A check-in is a short "did I do what I said?" update your partner sees.</p>
+      <div class="choices" id="freq">
+        <button class="choice" data-v="daily"><span class="ic">⚡</span><b>Daily</b><small>For habits that need momentum</small></button>
+        <button class="choice" data-v="weekly"><span class="ic">📅</span><b>Weekly</b><small>Most popular. One solid update.</small></button>
+        <button class="choice" data-v="biweekly"><span class="ic">🌗</span><b>Every two weeks</b><small>For long, slow projects</small></button>
+      </div>
+      <div class="sub-q">And how do you want to work together?</div>
+      <div class="choices" id="mode">
+        <button class="choice" data-v="checkin"><span class="ic">✅</span><b>Check-ins</b><small>Report back on what you did</small></button>
+        <button class="choice" data-v="cowork"><span class="ic">🧑‍💻</span><b>Co-working</b><small>Work side by side on a call. Great for getting started.</small></button>
+        <button class="choice" data-v="both"><span class="ic">✨</span><b>Both</b><small>Check-ins, plus company when you're stuck</small></button>
+      </div>
+      <div class="why-ask"><span class="ic">💡</span><span><b>Why we ask:</b> partners with the same rhythm stick together far longer. It also sets how often we remind you. Co-working (sometimes called body doubling) helps a lot of people start: someone else is there, quietly working too.</span></div>
+    </div>
+
+    <div class="qstep" data-step="2">
+      <div class="qnum">3 of 6</div>
+      <h2>How does your <em>energy</em> work?</h2>
+      <p>No wrong answers. Everyone here has ADHD, so we match on how you actually get things done.</p>
+      <div class="sub-q" style="margin-top:0">When do you usually get going?</div>
+      <div class="choices" id="estart">
+        <button class="choice" data-v="slow"><span class="ic">🐢</span><b>Slow starter</b><small>Hard to begin, fine once I'm in</small></button>
+        <button class="choice" data-v="burst"><span class="ic">⚡</span><b>Burst worker</b><small>Big bursts, then nothing for a while</small></button>
+        <button class="choice" data-v="deadline"><span class="ic">⏰</span><b>Deadline-driven</b><small>Nothing happens until it's urgent</small></button>
+        <button class="choice" data-v="steady"><span class="ic">🌊</span><b>Fairly steady</b><small>Some rhythm, with wobbles</small></button>
+      </div>
+      <div class="sub-q">What usually happens when you fall off?</div>
+      <div class="choices" id="efall">
+        <button class="choice" data-v="quiet"><span class="ic">🫥</span><b>I go quiet</b><small>I avoid it and hope no one notices</small></button>
+        <button class="choice" data-v="crash"><span class="ic">📉</span><b>I overcommit, then crash</b><small>Too much at once, then nothing</small></button>
+        <button class="choice" data-v="bored"><span class="ic">🦋</span><b>I lose interest</b><small>The novelty wears off</small></button>
+        <button class="choice" data-v="spiral"><span class="ic">🌀</span><b>I spiral</b><small>One miss turns into five</small></button>
+      </div>
+      <div class="why-ask"><span class="ic">💡</span><span><b>Why we ask:</b> we pair people whose slumps don't line up, so one of you is usually up when the other is down. Your partner also learns what helps you. If you go quiet, for example, they'll send a no-pressure ping instead of asking why.</span></div>
+    </div>
+
+    <div class="qstep" data-step="3">
+      <div class="qnum">4 of 6</div>
+      <h2>What kind of partner <em>works for you</em>?</h2>
+      <p>Some people need warmth. Some need short, concrete asks. Nobody here gets shamed either way.</p>
+      <input type="range" class="range" id="fStyle" min="0" max="100" value="50">
+      <div class="range-l"><span>Soft landing</span><span>Direct</span></div>
+      <div class="style-read" id="styleRead">⚖ Balanced</div>
+      <div class="style-card"><p id="styleDesc"></p><div class="say"><span>When you miss a week, they'd say</span><div class="bub" id="styleSay"></div></div></div>
+      <div class="why-ask"><span class="ic">💡</span><span><b>Why we ask:</b> we match you with someone who likes the same tone, so encouragement doesn't feel soft and pushback doesn't feel harsh.</span></div>
+    </div>
+
+    <div class="qstep" data-step="4">
+      <div class="qnum">5 of 6</div>
+      <h2>When are you <em>free to talk</em>?</h2>
+      <p>We match you with someone whose day lines up with yours.</p>
+      <div class="choices" id="time" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr))">
+        <button class="choice" data-v="morning"><span class="ic">☀️</span><b>Mornings</b><small>Before the day starts</small></button>
+        <button class="choice" data-v="lunch"><span class="ic">🥪</span><b>Lunch</b><small>A midday reset</small></button>
+        <button class="choice" data-v="evening"><span class="ic">🌙</span><b>Evenings</b><small>Wind-down recaps</small></button>
+        <button class="choice" data-v="flex"><span class="ic">🗓</span><b>Flexible</b><small>Not sure yet. Agree a time with your partner each check-in.</small></button>
+      </div>
+      <div class="why-ask"><span class="ic">💡</span><span><b>Why we ask:</b> check-ins only work if you're both around. We pair you with someone whose free time overlaps with yours, whatever their timezone. If you pick Flexible, you'll be paired with someone happy to agree a time each check-in.</span></div>
+    </div>
+
+    <div class="qstep" data-step="5">
+      <div class="qnum">6 of 6</div>
+      <h2>Last thing: <em>who are you</em>?</h2>
+      <p>Three quick details so your partner can greet you, talk with you, and meet at the right time.</p>
+
+      <section class="grp">
+        <div class="grp-h"><span class="grp-n">1</span><div><b>Your first name</b><small>How your partner will greet you</small></div></div>
+        <div class="field"><input id="fName" placeholder=" " maxlength="24" autocomplete="given-name"><label for="fName">First name</label></div>
+      </section>
+
+      <section class="grp">
+        <div class="grp-h"><span class="grp-n">2</span><div><b>Where you are right now</b><small>Sets your time zone, so dates and times line up</small></div></div>
+        <div class="field"><select class="sel" id="fCountry" aria-label="Country you're in right now"></select><label class="sel-lbl" for="fCountry">Country</label></div>
+        <div class="tz-line" id="onbTz"></div>
+      </section>
+
+      <section class="grp">
+        <div class="grp-h"><span class="grp-n">3</span><div><b>Languages you're happy to chat in</b><small>Pick all that apply. We match you with someone you can talk to.</small></div></div>
+        <div class="lang-chips" id="fLangs"></div>
+        <form class="lang-add" id="fLangAdd"><input id="fLangIn" placeholder="Another language…" maxlength="24" aria-label="Add another language"><button class="btn ghost sm" type="submit"><span>+ Add</span></button></form>
+      </section>
+
+      <div class="why-ask"><span class="ic">💡</span><span><b>Why we ask:</b> no surname or email needed to try it. You can add more to your profile after you meet your partner.</span></div>
+    </div>
+
+    <div class="nav-row">
+      <button class="link" id="back">← Back</button>
+      <button class="btn" id="next" disabled><span>Continue</span></button>
+    </div>
+  </div>
+</main>
+
+<!-- SEARCHING -->
+<main class="view hidden searching" id="vSearch">
+  <div>
+    <div class="radar"><i></i><i></i><i></i><div class="sweep"></div></div>
+    <div class="search-t">Finding your partner…</div>
+    <div class="search-s" id="searchMsg">Looking at goals like yours</div>
+  </div>
+</main>
+
+<!-- NO MATCH -->
+<main class="view hidden" id="vNoMatch">
+  <div class="reveal-wrap">
+    <div class="eyebrow" style="color:var(--a)">✦ No match yet</div>
+    <h2 class="nm-h">Nobody fits <em>just yet</em>.</h2>
+    <p class="nm-p" id="nmWhy"></p>
+    <div class="nm-list" id="nmList"></div>
+    <div class="nm-foot"><button class="link" id="nmBack">← Change my answers</button><button class="btn ghost sm" id="nmWait"><span>Let me know when someone joins</span></button></div>
+  </div>
+</main>
+
+<!-- MATCH REVEAL -->
+<main class="view hidden" id="vMatch">
+  <div class="reveal-wrap">
+    <div class="eyebrow">✦ We found someone</div>
+    <div class="mcard" id="mcard">
+      <div class="mhead"><div class="av" id="mAv"></div><div><h3 id="mName"></h3><small id="mLoc"></small></div><div class="score"><b id="mScore">0%</b><small>Match</small></div></div>
+      <div class="why" id="mWhy"></div>
+      <p class="mquote" id="mQuote"></p>
+      <div class="mact"><button class="btn ghost" id="another"><span>↻ Someone else</span></button><button class="btn" id="accept"><span>Partner up →</span></button></div>
+    </div>
+  </div>
+</main>
+
+<!-- DASHBOARD -->
+<main class="view hidden" id="vDash">
+  <div class="dash">
+    <div class="greet">
+      <div class="greet-row"><div class="peer-stack" id="peerStack"></div><div><h1 id="dGreet"></h1><p id="dSub"></p><div class="peer-links" id="peerLinks"></div></div></div>
+    </div>
+    <nav class="tabs" id="tabs" role="tablist">
+      <i class="tab-pill"></i>
+      <button role="tab" data-tab="today"><span class="ti">☀</span><span>Today</span></button>
+      <button role="tab" data-tab="chat"><span class="ti">💬</span><span>Chat</span><b class="badge hidden" id="chatBadge">0</b></button>
+      <button role="tab" data-tab="progress" id="tabProgress"><span class="ti">📈</span><span>Progress</span></button>
+      <button role="tab" data-tab="you"><span class="ti">👤</span><span>You</span></button>
+    </nav>
+
+    <section class="tabp" data-tab="today" role="tabpanel">
+      <div class="panel setup" id="setupPanel"></div>
+      <div class="panel" id="checkPanel"></div>
+      <div class="panel" id="stuckPanel"></div>
+      <div class="panel latest" id="latest"></div>
+      <details class="more"><summary>More · your pact and details</summary>
+      <div class="panel">
+        <h4>Your pact <button class="link" id="editPact">Edit</button></h4>
+        <div class="pact-text" id="pactText"></div>
+        <div class="pact-meta" id="pactMeta"></div>
+      </div>
+      </details>
+    </section>
+
+    <section class="tabp two" data-tab="chat" role="tabpanel">
+      <div class="panel chat">
+        <div class="chat-head"><div class="av s" id="cAv"></div><div><b id="cName"></b><small>● Online · <span id="cClock"></span></small></div></div>
+        <div class="msgs" id="msgs"></div>
+        <button class="tip-link" data-tips="hi" id="chatTip">💡 What to write</button>
+        <div class="quick" id="quick"><button>Just checked in ✅</button><button>Rough week honestly</button><button>How's yours going?</button></div>
+        <form class="composer" id="composer"><input id="cInput" placeholder="Message…" autocomplete="off"><button class="btn sm" type="submit"><span>Send</span></button></form>
+      </div>
+      <div class="panel">
+        <h4>When you can meet <span style="letter-spacing:.08em">your time</span></h4>
+        <div id="chatOv"></div>
+      </div>
+      <details class="more" id="chMore"><summary>Other ways to reach each other</summary>
+      <div class="panel">
+        <h4>Preferred channels <button class="link" id="editCh">Edit mine</button></h4>
+        <p style="color:var(--mute);font-size:13px;line-height:1.55;margin-bottom:18px">Keep the chat here, or switch to whatever you both actually open. Listed in order of preference.</p>
+        <div class="ch-group"><span id="chThemLbl"></span><div class="ch-list" id="chThem"></div></div>
+        <div class="ch-group" style="margin-bottom:0"><span>Yours</span><div class="ch-list" id="chMine"></div></div>
+      </div>
+      </details>
+    </section>
+
+    <section class="tabp" data-tab="progress" role="tabpanel">
+      <div class="panel">
+        <h4>Showing up · last 8 periods <span id="seasonTag" style="letter-spacing:.08em"></span></h4>
+        <div class="streak-row">
+          <div><div class="big" id="sBoth">0<small>together</small></div></div>
+          <div><div class="big" id="sMe" style="font-size:36px">0<small>you</small></div></div>
+        </div>
+        <div class="freeze-line" id="freezeLine"></div>
+        <div class="weeks" id="weeks"></div>
+        <div class="legend"><span><i style="background:var(--a)"></i>You</span><span><i style="background:var(--b)"></i><span id="lgThem"></span></span><span><i style="background:linear-gradient(135deg,var(--a) 50%,var(--b) 50%)"></i>Both showed up</span><span><i style="background:#1b2a36;border:1px solid #3b6a8a"></i>Frozen</span></div>
+      </div>
+      <div class="panel">
+        <h4>Check-in history</h4>
+        <div class="log" id="log"></div>
+      </div>
+    </section>
+
+    <section class="tabp" data-tab="you" role="tabpanel">
+      <nav class="ynav" id="ynav" aria-label="Your settings">
+        <button data-y="profile" class="on"><span>🪪</span>Profile</button>
+        <button data-y="place"><span>🌍</span>Place & time</button>
+        <button data-y="notify"><span>🔔</span>Notifications</button>
+        <button data-y="comfort"><span>🌙</span>Comfort</button>
+        <button data-y="partner"><span>🤝</span>Partnership</button>
+      </nav>
+      <div class="panel ybody">
+        <div class="pf-host" id="pfHost"></div>
+        <div class="ysec" data-ysec="comfort">
+        <h3>Comfort</h3><p class="ysub">Make the app easier on your senses.</p>
+        <label class="toggle" style="border-top:none;padding-top:0"><span>Calm mode<small>No confetti, minimal motion</small></span><input type="checkbox" id="cfCalm"></label>
+        <div class="tsize">
+          <div class="tsize-h"><span>Text size<small>Bigger type and more breathing room</small></span><output id="cfTsOut">100%</output></div>
+          <div class="tsize-r"><span class="aa" style="font-size:13px">A</span><input type="range" id="cfTs" min="0" max="4" step="1" value="0" aria-label="Text size" aria-valuetext="Default"><span class="aa" style="font-size:22px">A</span></div>
+          <div class="tsize-ticks" id="cfTicks"><span data-v="0">Default</span><span data-v="1">Comfy</span><span data-v="2">Large</span><span data-v="3">Larger</span><span data-v="4">Largest</span></div>
+        </div>
+        <div class="toggle" style="cursor:default"><span>Appearance<small>Light or dark, whichever is easier on your eyes</small></span>
+          <div class="seg" id="cfTheme" role="radiogroup" aria-label="Appearance"><button data-v="dark" role="radio">🌙 Dark</button><button data-v="light" role="radio">☀️ Light</button></div></div>
+      </div>
+        <div class="ysec" data-ysec="partner">
+          <h3>Partnership</h3>
+          <p class="ysub" id="psLine"></p>
+          <div class="yrow"><div><b>Manage partnership</b><small>Seasons, adding a third member, switching or starting over.</small></div><button class="btn ghost sm" id="openPartner"><span>Open</span></button></div>
+          <div class="yrow"><div><b>Tips for partners</b><small>Habits that keep it working for both of you.</small></div><button class="btn ghost sm" id="openGuide"><span>Read</span></button></div>
+          <div class="yrow"><div><b>Your pact & contact channels</b><small>Your goal lives in <button class="link" id="pfPact">your pact</button>. Contact channels are under <button class="link" id="pfCh">Chat</button>.</small></div></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<!-- CHECK-IN MODAL -->
+<div class="modal hidden" id="mCheck">
+  <div class="sheet">
+    <h3>How did it go?</h3>
+    <p id="ciPrompt"></p>
+    <div class="yn" id="ciResult">
+      <button class="choice" data-v="yes"><span class="ic">✅</span><b>Did it</b></button>
+      <button class="choice" data-v="part"><span class="ic">🌱</span><b>Small version</b></button>
+      <button class="choice" data-v="no"><span class="ic">🌧</span><b>Not this time</b></button>
+    </div>
+    <div class="prompt" id="ciQ"></div>
+    <div class="emos" id="ciEmo" aria-label="How it felt"><button data-e="😩" aria-label="Rough">😩</button><button data-e="😐" aria-label="Meh">😐</button><button data-e="🙂" aria-label="Okay">🙂</button><button data-e="💪" aria-label="Strong">💪</button><button data-e="🔥" aria-label="On fire">🔥</button></div>
+    <div class="voice" id="ciVoice"><button class="rec" id="recBtn" type="button">🎙 Voice note</button></div>
+    <div class="field"><textarea id="ciNote" placeholder=" " maxlength="240"></textarea><label for="ciNote">Or type a line (optional)</label></div>
+    <div class="row"><button class="btn ghost" data-close><span>Cancel</span></button><button class="btn" id="ciSave" disabled><span>Send check-in</span></button></div>
+  </div>
+</div>
+
+<!-- SCHEDULE MODAL -->
+<div class="modal hidden" id="mSched">
+  <div class="sheet">
+    <h3>Book your intro call</h3>
+    <button class="tip-link" data-tips="call" style="margin:-2px 0 14px">💡 What to talk about on the call</button>
+    <div id="schedOv"></div>
+    <p id="schedP"></p>
+    <div class="slots" id="slots"></div>
+    <div class="row"><button class="btn ghost" data-close><span>Cancel</span></button><button class="btn" id="schedSave" disabled><span>Send invite</span></button></div>
+  </div>
+</div>
+
+<!-- FIT CHECK MODAL -->
+<div class="modal hidden" id="mFit">
+  <div class="sheet">
+    <h3>How did the call feel?</h3>
+    <p>Be honest. A good partnership is worth more than a fast one.</p>
+    <div class="fit-list"><div>Could you picture checking in with them every period?</div><div>Did their style feel right, not too soft or too harsh?</div><div>Do your schedules actually line up?</div></div>
+    <div class="yn" id="fitResult">
+      <button class="choice" data-v="yes"><span class="ic">🤝</span><b>Great fit</b></button>
+      <button class="choice" data-v="trial"><span class="ic">🤔</span><b>Not sure yet</b></button>
+      <button class="choice" data-v="no"><span class="ic">👋</span><b>Not a fit</b></button>
+    </div>
+    <p id="fitHint" style="font-size:13px;margin:0 0 18px;min-height:20px"></p>
+    <div class="row"><button class="btn ghost" data-close><span>Cancel</span></button><button class="btn" id="fitSave" disabled><span>Continue</span></button></div>
+  </div>
+</div>
+
+<!-- CHANNELS MODAL -->
+<div class="modal hidden" id="mCh">
+  <div class="sheet">
+    <h3>How can your partner reach you?</h3>
+    <p>Tick the ones you use and put your favourite at the top. Only your partner sees these.</p>
+    <div class="ch-edit" id="chEdit"></div>
+    <div class="row"><button class="btn ghost" data-close><span>Cancel</span></button><button class="btn" id="chSave"><span>Save</span></button></div>
+  </div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div class="modal hidden" id="mProfile">
+  <div class="sheet">
+    <div id="pfForm">
+    <div class="ysec" data-ysec="profile">
+      <h3>How you appear</h3>
+      <p class="ysub">What your partner sees. You choose what's shown.</p>
+      <div class="you-wrap" style="margin-top:0"><div class="lbl"><span id="pfLbl">Live preview</span></div><div id="pfPreview"></div></div>
+      <div class="photo-row">
+      <div class="pic" id="pfPic"></div>
+      <div class="acts">
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><label class="btn ghost sm" for="pfFile" style="cursor:pointer"><span>Upload photo</span></label><button class="link" id="pfRemove">Remove</button></div>
+        <small>JPG or PNG. Cropped to a circle.</small>
+        <input type="file" id="pfFile" accept="image/*" hidden>
+      </div>
+    </div>
+      <div class="field"><input id="pfName" placeholder=" " maxlength="24" autocomplete="given-name"><label for="pfName">First name</label></div>
+      <div class="field"><textarea id="pfBio" placeholder=" " maxlength="140" style="height:90px"></textarea><label for="pfBio">A line about you (optional)</label></div>
+      <div class="sec-t">Languages you're happy to chat in</div>
+    <div class="lang-chips" id="pfLangs"></div>
+    <form class="lang-add" id="pfLangAdd"><input id="pfLangIn" placeholder="Add another language" maxlength="24"><button class="btn ghost sm" type="submit"><span>Add</span></button></form>
+    </div>
+    <div class="ysec" data-ysec="place">
+      <h3>Place & time</h3>
+      <p class="ysub">Keeps every date and time right for you and your partner.</p>
+      <div class="field"><select class="sel" id="pfCountry" aria-label="Country you're in right now"></select><label class="sel-lbl" for="pfCountry">Country you're in right now</label></div>
+      <div class="field"><select id="pfTz" aria-label="Your time zone" style="width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:24px 18px 10px;font-size:16px;color:var(--ink);outline:none;appearance:none"></select><label for="pfTz" style="top:8px;font-size:11px;letter-spacing:.06em;color:var(--a)">Your time zone</label></div>
+    <div class="hint" id="pfTzHint" style="margin-top:-4px"></div>
+    </div>
+    <div class="ysec" data-ysec="notify">
+      <h3>Notifications</h3>
+      <p class="ysub">Where reminders go, and how much of them you want. Your email stays private.</p>
+      <div class="field"><input id="pfEmail" type="email" placeholder=" " autocomplete="email"><label for="pfEmail">Email for notifications</label></div>
+      <div class="sec-t">Email me when</div>
+    <label class="toggle"><span>A check-in is due<small>A reminder on the day, at your chosen time</small></span><input type="checkbox" data-n="due"></label>
+    <label class="toggle"><span>My partner checks in or messages<small>So you can reply while it's fresh</small></span><input type="checkbox" data-n="partner"></label>
+    <label class="toggle"><span>My partner goes quiet<small>A nudge if they miss two check-ins</small></span><input type="checkbox" data-n="quiet"></label>
+    <label class="toggle"><span>5 minutes before calls and co-working<small>A heads-up so it doesn't sneak up on you</small></span><input type="checkbox" data-n="warn"></label>
+    <label class="toggle"><span>Monthly progress summary</span><input type="checkbox" data-n="summary"></label>
+    <label class="toggle"><span>Bundle everything into one daily digest<small>Fewer pings. Urgent reminders still come through.</small></span><input type="checkbox" data-n="digest"></label>
+    <div class="sec-t">How much reminding?</div>
+    <div class="seg-opt" id="pfRemind"><button data-v="once">Once</button><button data-v="few">A few nudges</button><button data-v="nag">Nag me until I check in</button></div>
+    </div>
+    <div class="err" id="pfErr"></div>
+    <div class="row" style="margin-top:22px"><button class="btn ghost" id="pfCancel" type="button"><span>Cancel</span></button><button class="btn" id="pfSave"><span>Save profile</span></button></div>
+    </div>
+  </div>
+</div>
+
+<!-- TIPS DRAWER -->
+<div class="drawer-scrim hidden" id="tipsScrim"></div>
+<aside class="drawer" id="tips" aria-hidden="true" aria-label="Tips and tricks">
+  <div class="drawer-head"><div><small>Tips & tricks</small><h3 id="tipsTitle">For right now</h3></div><button class="drawer-x" id="tipsClose" aria-label="Close tips">✕</button></div>
+  <div class="drawer-body" id="tipsBody"></div>
+</aside>
+<button class="tips-fab hidden" id="tipsFab" aria-label="Open tips"><span>💡</span><b>Tips</b></button>
+
+<!-- PARTNER PUBLIC PROFILE -->
+<div class="modal hidden" id="mPeer">
+  <div class="sheet peer-sheet" id="peerBody"></div>
+</div>
+
+<!-- MANAGE PARTNERSHIP -->
+<div class="modal hidden" id="mPartner">
+  <div class="sheet">
+    <h3>Your partnership</h3>
+    <p id="mpSub"></p>
+    <div class="mp-sec"><div class="mp-h">🗓 Seasons</div><p id="seasonNote"></p></div>
+    <div class="mp-sec"><div class="trio-box" id="trioBox"></div></div>
+    <div class="mp-sec"><div class="mp-h">🔄 Switch partner</div><p>Moving on is a normal part of Tandem, not a breakup. Your partner won't see a reason.</p>
+      <div class="confirm" data-confirm="rematch"><button class="btn ghost sm" data-ask><span>Switch partner…</span></button></div></div>
+    <div class="mp-sec danger"><div class="mp-h">⚠️ Start over</div><p>Clears your answers, partner, chat and history on this device.</p>
+      <div class="confirm" data-confirm="reset"><button class="btn ghost sm" data-ask><span>Start over…</span></button></div></div>
+    <div class="row"><button class="btn" data-close><span>Done</span></button></div>
+  </div>
+</div>
+
+<!-- SEASON END -->
+<div class="modal hidden" id="mSeason">
+  <div class="sheet">
+    <h3 id="seasonT"></h3>
+    <p id="seasonP"></p>
+    <div class="season-stats" id="seasonStats"></div>
+    <div class="row"><button class="btn ghost" id="seasonNew"><span>Try someone new</span></button><button class="btn" id="seasonRenew"><span>Another season together</span></button></div>
+  </div>
+</div>
+
+<!-- TRIO MODAL -->
+<div class="modal hidden" id="mTrio">
+  <div class="sheet">
+    <div class="trio-steps"><span id="ts1"></span><span id="ts2"></span><span id="ts3"></span></div>
+    <div id="trioBody"></div>
+  </div>
+</div>
+
+<!-- EDIT PACT MODAL -->
+<div class="modal hidden" id="mPact">
+  <div class="sheet">
+    <h3>Edit your pact</h3>
+    <p>Keep it concrete: what you'll do and by when.</p>
+    <div class="field"><textarea id="pactInput" placeholder=" " maxlength="180"></textarea><label for="pactInput">My goal</label></div>
+    <div class="field"><input id="pactMin" placeholder=" " maxlength="100"><label for="pactMin">Smallest version, for a bad day</label></div>
+    <div class="row"><button class="btn ghost" data-close><span>Cancel</span></button><button class="btn" id="pactSave"><span>Save</span></button></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+/* ============ data ============ */
+const PEOPLE = {
+  fitness:[{n:'Maya',l:'Lisbon',tz:'GMT+1',c:'#ff7a4d',q:"Training for Berlin. I send my Strava every Sunday and I'll expect yours.",g:'Sub-4 marathon in April'},{n:'Theo',l:'Berlin',tz:'GMT+1',c:'#7c6cff',q:'Former couch-to-5k dropout. Now on my third marathon block.',g:'Strength train 3x a week'}],
+  writing:[{n:'Jules',l:'Montréal',tz:'GMT-5',c:'#3ee0b0',q:"Swapping word counts every Friday. I'll ask about the chapter you're avoiding.",g:'Finish novel draft by June'},{n:'Iris',l:'Dublin',tz:'GMT+0',c:'#ff7a4d',q:'Poet by night, finishing a memoir by spring.',g:'2,000 words a week'}],
+  code:[{n:'Sam',l:'Austin',tz:'GMT-6',c:'#7c6cff',q:"Demo something every week, even if it's ugly.",g:'Launch my app on the store'},{n:'Aiko',l:'Osaka',tz:'GMT+9',c:'#3ee0b0',q:"Indie game dev. Let's both hit launch this year.",g:'Ship a playable demo'}],
+  lang:[{n:'Tomás',l:'Valencia',tz:'GMT+1',c:'#ff7a4d',q:'Native Spanish, learning English. Half the call each way.',g:'Reach B2 English'},{n:'Chen',l:'Toronto',tz:'GMT-5',c:'#7c6cff',q:'Working toward JLPT N3. Flashcards daily, calls weekly.',g:'Pass JLPT N3'}],
+  money:[{n:'Noor',l:'London',tz:'GMT+0',c:'#3ee0b0',q:"Paid off $14k. Happy to be the one you're honest with.",g:'Emergency fund of 3 months'},{n:'Diego',l:'Mexico City',tz:'GMT-6',c:'#ff7a4d',q:'Saving for a first home. Monthly budget reviews, no judgment.',g:'Save for a house deposit'}],
+  study:[{n:'Priya',l:'Bangalore',tz:'GMT+5:30',c:'#7c6cff',q:"Thesis year. I'll share my Pomodoro count if you share yours.",g:'Submit thesis by September'},{n:'Lukas',l:'Vienna',tz:'GMT+1',c:'#3ee0b0',q:'Studying for the CFA. Quiet, consistent, a bit relentless.',g:'Pass CFA Level I'}]
+};
+const ESTART={slow:'Slow starter',burst:'Burst worker',deadline:'Deadline-driven',steady:'Fairly steady'};
+const ECOMP={slow:'steady',burst:'steady',deadline:'slow',steady:'burst'};
+const FALLHELP={quiet:"No-pressure pings when you go quiet",crash:'Helps you scale back before a crash',bored:'Mixes things up when it gets stale',spiral:'Reminds you one miss is just one'};
+const MODE = {checkin:'Check-ins',cowork:'Co-working',both:'Check-ins + co-working'};
+const FREQ = {daily:'Daily',weekly:'Weekly',biweekly:'Every two weeks'};
+const TIME = {morning:'Mornings',lunch:'Lunch',evening:'Evenings',flex:'Flexible timing'};
+const PERIOD = {daily:'today',weekly:'this week',biweekly:'these two weeks'};
+const STYLE_INFO = {
+  soft:[`Warm and patient. They celebrate starting, not just finishing, and never make a missed week feel like failure.`,`"No stress 💛 Want to pick one tiny thing to try this week?"`],
+  mid:[`Friendly and practical. Happy for your wins, curious about what got in the way, always with a next step.`,`"Happens to both of us. What got in the way, and what's the smallest next step?"`],
+  hard:[`Clear and to the point. Short messages and concrete asks, never guilt trips. Direct doesn't mean harsh.`,`"Okay, that one slipped. What's one thing you can do in the next hour?"`]
+};
+function renderStyle(){const [d,q]=STYLE_INFO[tone(S.style)];$('#styleDesc').textContent=d;$('#styleSay').textContent=q;}
+const styleName = v => v<34?'💛 Soft landing':v<67?'⚖ Balanced':'🎯 Direct';
+const tone = v => v<34?'soft':v<67?'mid':'hard';
+
+const REPLIES = {
+  soft:{checkin:["That's brilliant, honestly proud of you 💛","Look at you go! Every week counts.","Love this. Be kind to yourself on the off days too."],
+        miss:["Totally okay. One week doesn't undo anything 💛","Hey, you showed up to tell me. That matters. Next week?"],
+        chat:["I'm here whenever you want to talk it through.","That sounds like a lot. What would make next week 10% easier?","Haha same. Glad we're doing this together."]},
+  mid:{checkin:["Nice, logged. What's the plan for next time?","Solid. Keep that rhythm going.","Good stuff. I checked in too, we're even."],
+       miss:["Happens to me too. What got in the way?","Noted. Small version next time?"],
+       chat:["Fair. What's the one thing you'll do before we next talk?","Makes sense. I'm on track, just about.","Let's pick a time and just do it together."]},
+  hard:{checkin:["Nice. Same again next time?","Done is done. What's next?","Good. Lock in a time for the next one."],
+        miss:["Okay. What's one thing you can do in the next hour?","That one slipped. Small version this time?"],
+        chat:["Let's pick a time and just do it.","What's the very next step? Name it.","Want to co-work for 10 minutes? Hit 'I'm stuck'."]}
+};
+
+/* ============ state ============ */
+const KEY='tandem.app.v1';
+const blank = () => ({started:false,progressSeen:false,wide:false,anyGoal:false,country:'',langs:[],third:null,thirdWeeks:[],thirdSkip:[],estart:null,efall:null,season:1,pStart:null,mode:null,minGoal:'',freezes:1,frozen:[],welcome:null,session:null,tab:'today',unread:0,channels:null,profile:{email:'',photo:'',bio:'',remind:'few',calm:false,big:false,notify:{due:true,partner:true,quiet:true,summary:false,warn:true,digest:false}},setup:{hi:false,slot:null,fit:null,pact:false},lastScore:null,step:0,goal:'',cat:null,freq:null,style:50,time:null,name:'',partner:null,skip:[],checkins:[],msgs:[],week:0,partnerWeeks:[]});
+let S = load();
+function load(){try{const r=localStorage.getItem(KEY);if(r)return Object.assign(blank(),JSON.parse(r));}catch(e){}return blank();}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ============ router ============ */
+function show(id){
+  const cur=$$('.view').find(v=>!v.classList.contains('hidden'));
+  const next=$(id);
+  const go=()=>{ $$('.view').forEach(v=>v.classList.add('hidden')); next.classList.remove('hidden'); scrollTo(0,0); if(id==='#vDash')requestAnimationFrame(moveTabPill);
+    gsap.fromTo(next,{opacity:0,y:24},{opacity:1,y:0,duration:.6,ease:'power3.out',clearProps:'transform'}); };
+  if(cur && cur!==next) gsap.to(cur,{opacity:0,y:-16,duration:.3,ease:'power2.in',onComplete:go}); else go();
+  $('#tipsFab').classList.toggle('hidden',id!=='#vDash');
+  $('#topR').innerHTML = id==='#vDash' ? `<button class="me-btn" id="meBtn" aria-label="Your profile">${picHTML()}<span>${esc(S.name)}</span></button>` : `<a href="../" class="link">Back to site</a>`;
+  $('#meBtn')?.addEventListener('click',openProfile);
+}
+
+/* ============ onboarding ============ */
+function pick(groupSel,key){
+  $(groupSel).addEventListener('click',e=>{
+    const b=e.target.closest('.choice'); if(!b)return;
+    $$(groupSel+' .choice').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+    gsap.fromTo(b,{scale:.95},{scale:1,duration:.5,ease:'elastic.out(1,.45)'});
+    S[key]=b.dataset.v; save(); validate();
+  });
+}
+pick('#cat','cat'); pick('#freq','freq'); pick('#time','time'); pick('#mode','mode'); pick('#estart','estart'); pick('#efall','efall');
+$('#fMin').addEventListener('input',e=>{S.minGoal=e.target.value;save();});
+$('#fGoal').addEventListener('input',e=>{S.goal=e.target.value;$('#goalCount').textContent=`${S.goal.length} / 180`;save();validate();});
+$('#fName').addEventListener('input',e=>{S.name=e.target.value.trim();save();validate();});
+function countryOptions(cur){return `<option value="">Choose a country</option>`+COUNTRIES.map(c=>({c,n:ccName(c)})).sort((a,b)=>a.n.localeCompare(b.n)).map(({c,n})=>`<option value="${c}" ${c===cur?'selected':''}>${flag(c)} ${esc(n)}</option>`).join('');}
+function langChips(el,sel){const all=[...new Set([...COMMON_LANGS,...sel])];el.innerHTML=all.map(l=>`<button type="button" data-l="${esc(l)}" class="${sel.includes(l)?'on':''}">${esc(l)}</button>`).join('');}
+function applyCountry(cc){ // one-zone countries set the zone automatically; big countries keep the detected zone
+  if(CC_TZ[cc]&&CC_TZ[cc]!==myTz()){prof().tz=CC_TZ[cc]===detectedTz?'':CC_TZ[cc];}
+}
+$('#fCountry').addEventListener('change',e=>{S.country=e.target.value;applyCountry(S.country);save();validate();renderOnbTz();});
+$('#fLangs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const l=b.dataset.l;S.langs=S.langs.includes(l)?S.langs.filter(x=>x!==l):[...S.langs,l];b.classList.toggle('on');save();validate();});
+$('#fLangAdd').addEventListener('submit',e=>{e.preventDefault();const v=$('#fLangIn').value.trim();if(!v)return;const l=v[0].toUpperCase()+v.slice(1);if(!S.langs.includes(l))S.langs.push(l);$('#fLangIn').value='';save();langChips($('#fLangs'),S.langs);validate();});
+function renderOnbTz(){const multi=MULTI_TZ.includes(S.country);
+  $('#onbTz').innerHTML=`🕒 We'll show every date and time in <b>${esc(tzLabel(myTz()))}</b> (it's ${fmtHM(Date.now(),myTz())} for you now).${multi?` ${esc(ccName(S.country))} has several time zones, so check this one is yours in your profile.`:' You can change this in your profile.'}`;}
+$('#fStyle').addEventListener('input',e=>{S.style=+e.target.value;const r=$('#styleRead'),t=styleName(S.style);if(r.textContent!==t){r.textContent=t;renderStyle();gsap.fromTo([r,'.style-card'],{y:8,opacity:0},{y:0,opacity:1,duration:.3,stagger:.05});}save();});
+$('#fName').addEventListener('keydown',e=>{if(e.key==='Enter'&&!$('#next').disabled)$('#next').click();});
+
+function valid(step){return [S.goal.trim().length>3&&S.cat, S.freq&&S.mode, S.estart&&S.efall, true, S.time, S.name.length>0&&!!S.country&&(S.langs||[]).length>0][step];}
+function validate(){$('#next').disabled=!valid(S.step);}
+function renderStep(dir=1){
+  renderOnbTz();
+  $$('.qstep').forEach(q=>q.classList.toggle('on',+q.dataset.step===S.step));
+  const q=$(`.qstep[data-step="${S.step}"]`);
+  gsap.fromTo(q.children,{opacity:0,x:30*dir},{opacity:1,x:0,duration:.5,stagger:.05,ease:'power3.out'});
+  gsap.to('#bar',{width:`${(S.step+1)/6*100}%`,duration:.6,ease:'power3.out'});
+  $('#next span').textContent=S.step===5?'Find my partner →':'Continue';
+  validate();
+  if(S.step===0)setTimeout(()=>$('#fGoal').focus(),50); if(S.step===5)setTimeout(()=>$('#fName').focus(),50);
+}
+function hydrateOnb(){
+  if(!S.country)S.country=guessCountry(); if(!S.langs||!S.langs.length)S.langs=['English'];
+  $('#fCountry').innerHTML=countryOptions(S.country); langChips($('#fLangs'),S.langs);
+  $('#fGoal').value=S.goal; $('#fMin').value=S.minGoal||''; $('#goalCount').textContent=`${S.goal.length} / 180`; $('#fName').value=S.name; $('#fStyle').value=S.style; $('#styleRead').textContent=styleName(S.style); renderStyle();
+  [['#cat','cat'],['#freq','freq'],['#time','time'],['#mode','mode'],['#estart','estart'],['#efall','efall']].forEach(([g,k])=>$$(g+' .choice').forEach(b=>b.classList.toggle('on',b.dataset.v===S[k])));
+}
+$('#next').addEventListener('click',()=>{ if(S.step<5){S.step++;save();renderStep(1);} else startSearch(); });
+$('#back').addEventListener('click',()=>{ if(S.step>0){S.step--;save();renderStep(-1);} else {S.started=false;save();show('#vIntro');} });
+
+/* ============ search & match ============ */
+function pool(st=S){const cats=st.anyGoal?Object.keys(PEOPLE):[st.cat];return cats.flatMap(c=>PEOPLE[c].map((p,i)=>({...p,id:c+i})));}
+function meetHours(q,st=S){const tz=(st.profile&&st.profile.tz)||detectedTz, [a,b]=st.wide?[6,24]:[7,22], day0=tsInTz(0,'0:00',tz);let n=0;
+  for(let h=0;h<24;h++){const ts=day0+h*36e5,mh=hourIn(ts,tz),th=hourIn(ts,tzOf(q));if(mh>=a&&mh<b&&th>=7&&th<22)n++;}return n;}
+function isValid(q,st=S){return langsOf(q).some(l=>(st.langs||[]).includes(l))&&meetHours(q,st)>0;}
+function candidates(){return pool().filter(p=>!S.skip.includes(p.id)&&isValid(p));}
+function startSearch(){
+  show('#vSearch');
+  const msgs=[`Looking at ${S.cat==='code'?'side-project':S.cat} goals like yours`,S.time==='flex'?'Finding someone happy to schedule as you go':`Checking ${TIME[S.time].toLowerCase()} availability`,`Weighing ${styleName(S.style).slice(2).toLowerCase()} styles`,'Found a strong match'];
+  const tl=gsap.timeline({onComplete:revealMatch});
+  gsap.set('.sweep',{rotation:0}); gsap.to('.sweep',{rotation:360*4,duration:4,ease:'none'});
+  msgs.forEach((m,i)=>tl.to('#searchMsg',{opacity:0,duration:.2,onComplete:()=>$('#searchMsg').textContent=m}).to('#searchMsg',{opacity:1,duration:.3}).to({}, {duration:.5}));
+  const radar=$('.radar'); $$('.blip').forEach(b=>b.remove());
+  for(let i=0;i<7;i++){const b=document.createElement('div');b.className='blip';const a=Math.random()*6.28,r=40+Math.random()*80;b.style.left=130+Math.cos(a)*r-5+'px';b.style.top=130+Math.sin(a)*r-5+'px';radar.appendChild(b);
+    gsap.to(b,{opacity:1,duration:.2,delay:.4+i*.45,yoyo:true,repeat:1,repeatDelay:.3});}
+}
+function showNoMatch(){
+  const base=pool(), pp=(st)=>pool(st).filter(q=>isValid(q,st));
+  const noLang=base.filter(q=>!langsOf(q).some(l=>S.langs.includes(l))).length, noTime=base.filter(q=>meetHours(q)===0).length;
+  $('#nmWhy').textContent=`We looked at everyone working on ${S.anyGoal?'any goal':'goals like yours'}. `+
+    [noLang?`${noLang} don't share a language with you`:'',noTime?`${noTime} are never awake at the same time as you`:''].filter(Boolean).join(', and ')+
+    '. A small change could get you matched today:';
+  const opts=[];
+  // languages spoken by people who'd otherwise fit
+  const langGain={};base.forEach(q=>{if(meetHours(q)>0&&!langsOf(q).some(l=>S.langs.includes(l)))langsOf(q).forEach(l=>langGain[l]=(langGain[l]||0)+1);});
+  Object.entries(langGain).sort((a,b)=>b[1]-a[1]).slice(0,2).forEach(([l,n])=>opts.push({ic:'🗣',t:`Add ${l}`,d:`Only if you're comfortable chatting in it.`,n:pp({...S,langs:[...S.langs,l]}).length,go:()=>{S.langs=[...S.langs,l];}}));
+  if(!S.wide)opts.push({ic:'🌗',t:'Early or late calls are fine',d:'Opens 6:00 to midnight on your side, for partners far away.',n:pp({...S,wide:true}).length,go:()=>{S.wide=true;}});
+  if(!S.anyGoal)opts.push({ic:'🧭',t:'Open to partners with other goals',d:'Different goal, same kind of energy. Many pairs work this way.',n:pp({...S,anyGoal:true}).length,go:()=>{S.anyGoal=true;}});
+  const good=opts.filter(o=>o.n>0).sort((a,b)=>b.n-a.n);
+  $('#nmList').innerHTML=good.length?good.map((o,i)=>`<button class="nm-opt" data-i="${opts.indexOf(o)}"><span class="ic">${o.ic}</span><span><b>${esc(o.t)}</b><small>${esc(o.d)}</small></span><span class="gain">+${o.n} ${o.n===1?'match':'matches'}</span></button>`).join('')
+    :`<div class="empty" style="text-align:center">Nothing we can tweak right now. We'll keep looking and email you when someone joins.</div>`;
+  $$('#nmList .nm-opt').forEach(b=>b.addEventListener('click',()=>{opts[+b.dataset.i].go();S.skip=[];save();hydrateOnb();startSearch();}));
+  show('#vNoMatch'); gsap.from('#nmList .nm-opt',{y:16,opacity:0,stagger:.08,duration:.5,delay:.2,ease:'power3.out'});
+}
+$('#nmBack').addEventListener('click',()=>{S.step=5;save();show('#vOnb');renderStep(-1);});
+$('#nmWait').addEventListener('click',()=>{toast(prof().email?`We'll email ${prof().email} when someone fits`:"We'll let you know here when someone fits");});
+
+function revealMatch(){
+  let list=candidates(); if(!list.length){S.skip=[];list=candidates();}
+  if(!list.length){showNoMatch();return;}
+  const p=list[0];
+  // best candidate is shown first: each "someone else" can only score lower than the last one
+  const raw=86+((S.style+p.n.length*7+S.time.length)%12);
+  const score=S.lastScore==null?raw:Math.max(55,Math.min(raw,S.lastScore-(2+p.n.length%4)));
+  S.partner=p; S.lastScore=score; save();
+  $('#mAv').textContent=''; $('#mAv').style.background=`${portrait(p)} center/cover`;
+  $('#mName').textContent=p.n; $('#mLoc').textContent=`${flag(ccOf(p))} ${p.l}, ${ccName(ccOf(p))} · ${fmtHM(Date.now(),tzOf(p))} there (${relLabel(p)})`;
+  $('#mQuote').textContent=`"${p.q}"`;
+  $('#mWhy').innerHTML=[['You both have','ADHD 🧠'],['Their goal',p.g],['Their energy',ESTART[ECOMP[S.estart]]||'Fairly steady'],['When you fall off',FALLHELP[S.efall]||'Checks in gently'],['Languages in common',shared(p).join(', ')||`None listed (they speak ${langsOf(p).join(', ')})`],['Can meet',`${meetHours(p)}h a day when you're both awake`],['Rhythm',`${FREQ[S.freq]} · you: ${TIME[S.time]}, ${p.n}: ${TIME[PREF_OF[p.n]||'flex']}`],['Tone',styleName(S.style).slice(2)]].map(([a,b])=>`<div><span>${a}</span><span>${esc(b)}</span></div>`).join('');
+  renderYouMatch();
+  show('#vMatch');
+  gsap.fromTo('#mcard',{rotateX:-25,y:60,opacity:0},{rotateX:0,y:0,opacity:1,duration:1,ease:'power4.out',delay:.2});
+  gsap.from('#mWhy div',{x:-20,opacity:0,stagger:.08,delay:.6,duration:.5});
+  const o={v:0}; gsap.to(o,{v:score,duration:1.4,delay:.5,ease:'power2.out',onUpdate:()=>$('#mScore').textContent=Math.round(o.v)+'%'});
+}
+$('#another').addEventListener('click',()=>{S.skip.push(S.partner.id);S.partner=null;save();startSearch();});
+$('#accept').addEventListener('click',()=>{
+  S.tab='today'; S.unread=0; S.progressSeen=false; S.progressDot=false; S.ms=[]; S.fresh=[]; S.lastScore=null; S.setup={hi:false,slot:null,fit:null,pact:false}; S.week=0; S.checkins=[]; S.partnerWeeks=[]; S.freezes=1; S.frozen=[]; S.welcome=null; S.session=null; S.season=1; S.pStart=Date.now(); S.third=null; S.thirdWeeks=[]; S.thirdSkip=[];
+  // seed some partner history so the streak grid isn't empty
+  S.msgs=[{f:'sys',t:`You and ${S.partner.n} are partners now`},{f:'them',t:`Hey ${S.name}! ${S.partner.q.split('.')[0]}. Your goal, "${S.goal.trim()}", sounds great. Fancy a quick intro call so we can get to know each other? 🙌`}];
+  save(); confetti(); $('#pfHost').appendChild($('#pfForm')); renderDash(); show('#vDash');
+});
+
+/* ============ dashboard ============ */
+function streak(pred){let n=0;for(let w=pred(S.week)?S.week:S.week-1;w>=0;w--){if(pred(w))n++;else break;}return n;}
+const meDid=w=>S.checkins.some(c=>c.week===w&&c.r!=='no');
+const themDid=w=>S.partnerWeeks.includes(w)&&(!S.third||S.thirdWeeks.includes(w));
+const groupNames=()=>S.third?`${S.partner.n} & ${S.third.n}`:S.partner.n;
+function markPartner(){if(!S.partnerWeeks.includes(S.week)&&Math.random()<.85)S.partnerWeeks.push(S.week);if(S.third&&!S.thirdWeeks.includes(S.week)&&Math.random()<.8)S.thirdWeeks.push(S.week);}
+/* ---------- getting started ---------- */
+function setupSteps(){
+  const p=S.partner, u=S.setup;
+  return [
+    {t:`Say hi to ${p.n}`,d:'Break the ice in the chat. A line about why this goal matters to you goes a long way.',done:u.hi,btn:'Say hi',fn:sayHi},
+    {t:'Book a 15-minute intro call',d:u.slot?`Booked: ${u.slotAt?`${fmtDay(u.slotAt,myTz())} ${fmtHM(u.slotAt,myTz())} your time, ${fmtHM(u.slotAt,tzOf(p))} for ${p.n}, in ${fmtLeft(u.slotAt-Date.now())}`:u.slot}. ${p.n} accepted.${prof().notify.warn?' We\'ll ping you 5 minutes before.':''}`:(S.time==='flex'?`You chose flexible timing, so pick a time together with ${p.n}.`:`Pick a ${({morning:'morning',lunch:'lunchtime',evening:'evening'})[S.time]} slot that suits you both.`),done:!!u.slot,btn:'Pick a time',fn:openSched},
+    {t:'Have the call, then decide',d:u.fit==='trial'?'Trial run: two check-ins, then decide for good.':'See if it feels right: pace, tone, schedule. No hard feelings either way.',done:!!u.fit,btn:'Call done',fn:openFit},
+    {t:'Agree your pact',d:"Confirm exactly what you'll do each period. This is what you check in against.",done:u.pact,btn:'Review pact',fn:()=>{pactFromSetup=true;$('#pactInput').value=S.goal;$('#pactMin').value=S.minGoal||'';openModal('#mPact');}}
+  ];
+}
+function renderSetup(){
+  const el=$('#setupPanel'), steps=setupSteps(), n=steps.filter(x=>x.done).length;
+  if(n===4){ el.classList.add('hidden'); return; }
+  el.classList.remove('hidden');
+  const cur=steps.findIndex(x=>!x.done);
+  el.innerHTML=`<div class="setup-head"><div><h4 style="margin-bottom:8px">Getting started · next step</h4><h3>${esc(steps[cur].t)}</h3></div><small>${n} of 4 done</small></div>
+    <div class="setup-bar"><b style="width:${n/4*100}%"></b></div>
+    ${steps.map((x,i)=>`<div class="todo ${x.done?'done':i===cur?'cur':'locked'}"><span class="tick">${x.done?'✓':i+1}</span><div><b>${esc(x.t)}</b><small>${esc(i>cur?'Unlocks after the step above.':x.d)}</small></div>${i===cur?`<button class="btn sm" data-step="${i}"><span>${x.btn}</span></button>`:''}</div>`).join('')}`;
+  el.querySelectorAll('[data-step]').forEach(b=>b.addEventListener('click',()=>steps[+b.dataset.step].fn()));
+}
+const MILESTONES={
+  hi:  {t:'Nice first message 👋',d:'Next up: book a short intro call.'},
+  slot:{t:'Intro call booked 📅',d:"It's on your Today list, with a countdown."},
+  fit: {t:"You're officially partners 🤝",d:'Check-ins and "I\'m stuck" are now open on Today.',show:['#checkPanel','#stuckPanel']},
+  pact:{t:"You're all set 🎉",d:'Your pact is agreed. Your first check-in is waiting.',party:true}
+};
+function completeStep(){
+  const u=S.setup; S.ms=S.ms||[]; const key=['hi','slot','fit','pact'].find(k=>u[k]&&!S.ms.includes(k));
+  renderDash();
+  if(!key){return;}
+  S.ms.push(key); save(); const m=MILESTONES[key];
+  milestone(m.t,m.d); if(m.party&&!isCalm())confetti();
+  (m.show||[]).forEach(sel=>markNew(sel));
+  if(!$('#setupPanel').classList.contains('hidden'))gsap.fromTo('#setupPanel .todo.cur',{x:-10,opacity:.3},{x:0,opacity:1,duration:.6,ease:'power3.out'});
+  else markNew('#checkPanel');
+}
+function milestone(title,sub){
+  $$('.milestone').forEach(x=>x.remove());
+  const el=document.createElement('div');el.className='milestone';el.setAttribute('role','status');
+  el.innerHTML=`<b>${esc(title)}</b><small>${esc(sub)}</small>`;document.body.appendChild(el);
+  gsap.fromTo(el,{y:-24,opacity:0},{y:0,opacity:1,duration:.5,ease:'back.out(1.6)'});
+  gsap.to(el,{y:-24,opacity:0,delay:4,duration:.35,onComplete:()=>el.remove()});
+}
+// a one-time "New" marker on things that just became available; it clears once you've seen it
+function markNew(sel){const el=$(sel);if(!el||el.classList.contains('hidden'))return;S.fresh=[...new Set([...(S.fresh||[]),sel])];save();applyNew();}
+function applyNew(){(S.fresh||[]).forEach(sel=>{const el=$(sel);if(!el||el.classList.contains('hidden'))return;el.classList.add('is-new');
+  const h=el.querySelector('h4')||el.querySelector('b');if(h&&!h.querySelector('.new-pill'))h.insertAdjacentHTML('beforeend','<span class="new-pill">New</span>');});}
+function clearNew(sel){S.fresh=(S.fresh||[]).filter(x=>x!==sel);save();const el=$(sel);if(el){el.classList.remove('is-new');el.querySelectorAll('.new-pill').forEach(x=>x.remove());}}
+document.addEventListener('click',e=>{(S.fresh||[]).forEach(sel=>{const el=$(sel);if(el&&el.contains(e.target))clearNew(sel);});});
+function sayHi(){setTab('chat');const i=$('#cInput');i.value=`Hi ${S.partner.n}! I'm ${S.name}. Really keen to get going on this.`;i.focus();i.select();gsap.fromTo('.composer',{x:-6},{x:0,duration:.5,ease:'elastic.out(1,.3)'});}
+
+/* scheduling */
+let slotPick=null, slotTs=0;
+function openSched(){
+  // candidate slots are built in the user's time zone, then kept only if they land at a humane hour for everyone
+  // for each day, walk the user's preferred window in 30-minute steps and take the first time that suits everyone
+  const band={morning:[7,11.5],lunch:[11.5,14.5],evening:[17.5,21.5],flex:[9,20]}[S.time];
+  const others=[S.partner,S.third].filter(Boolean), me=myTz(), out=[];
+  // first choice: hours where everyone's declared availability overlaps
+  const bestH=overlapData([{n:'You',tz:me,me:true},...others.map(q=>({n:q.n,tz:tzOf(q)}))]).filter(x=>x.best).map(x=>x.h);
+  if(bestH.length)for(let o=1;out.length<3&&o<=6;o+=2)out.push(tsInTz(o,`${bestH[Math.floor(bestH.length/2)]}:00`,me));
+  for(let o=1;o<=10&&out.length<3;o++){
+    for(let t=band[0];t<=band[1];t+=.5){const ts=tsInTz(o,`${Math.floor(t)}:${t%1?'30':'00'}`,me);
+      if(others.every(q=>{const h=hourIn(ts,tzOf(q));return h>=7&&h<22;})){out.push(ts);break;}}
+    if(out.length&&o<10)o+=out.length===1?0:1;}
+  // nothing fits the preferred window: fall back to any humane hour for everyone, and say so
+  let outside=false;
+  if(!out.length){outside=true;for(let o=1;o<=10&&out.length<3;o++)for(let t=7;t<22;t+=.5){const ts=tsInTz(o,`${Math.floor(t)}:${t%1?'30':'00'}`,me);if(others.every(q=>{const h=hourIn(ts,tzOf(q));return h>=7&&h<22;})){out.push(ts);o++;break;}}}
+  $('#schedP').textContent=(S.time==='flex'?`${groupNames()} suggested these. `:'')+`Shown in your time (${tzLabel(me)}), with ${others.length>1?'everyone else\'s':`${S.partner.n}'s`} local time underneath. Tap any green hour above to propose it. We skip anything before 7:00 or after 22:00 for anyone.`+(outside?` Nothing fits your ${TIME[S.time].toLowerCase()}, so these are the closest times that work for everyone.`:'');
+  $('#slots').innerHTML=out.map(ts=>`<button class="choice" data-v="${fmtDay(ts,me)}, ${fmtHM(ts,me)}" data-ts="${ts}"><span><b>${fmtDay(ts,me)} · ${fmtHM(ts,me)}</b><small style="color:var(--mute)">${others.map(q=>`${fmtHM(ts,tzOf(q))} ${fmtDayShift(ts,me,tzOf(q))}for ${esc(q.n)} (${esc(q.l)})`).join(' · ')}</small></span><small style="color:var(--c)">Free</small></button>`).join('')||'<div class="empty">No overlap in the next 10 days. Try Flexible timing, or suggest a time in chat.</div>';
+  slotPick=null;$('#schedSave').disabled=true;openModal('#mSched');
+  renderOverlap($('#schedOv'),{onPick:h=>{ // tapping the overlap row proposes tomorrow at that hour
+    const ts=tsInTz(1,`${h}:00`,me), v=`${fmtDay(ts,me)}, ${fmtHM(ts,me)}`;
+    $$('#slots [data-custom]').forEach(x=>x.remove());
+    $('#slots').insertAdjacentHTML('afterbegin',`<button class="choice" data-custom data-v="${v}" data-ts="${ts}"><span><b>${fmtDay(ts,me)} · ${fmtHM(ts,me)}</b><small style="color:var(--mute)">${others.map(q=>`${fmtHM(ts,tzOf(q))} ${fmtDayShift(ts,me,tzOf(q))}for ${esc(q.n)}`).join(' · ')}</small></span><small style="color:var(--c)">Your pick</small></button>`);
+    $('#slots [data-custom]').click(); gsap.from('#slots [data-custom]',{y:-10,opacity:0,duration:.4});}});
+}
+$('#slots').addEventListener('click',e=>{const b=e.target.closest('.choice');if(!b)return;$$('#slots .choice').forEach(x=>x.classList.remove('on'));b.classList.add('on');slotPick=b.dataset.v;slotTs=+b.dataset.ts;$('#schedSave').disabled=false;});
+$('#schedSave').addEventListener('click',()=>{S.setup.slot=slotPick;S.setup.slotAt=slotTs;S.msgs.push({f:'sys',t:`Intro call booked · ${fmtDay(slotTs,myTz())} ${fmtHM(slotTs,myTz())} your time · `+[S.partner,S.third].filter(Boolean).map(q=>`${fmtHM(slotTs,tzOf(q))} for ${q.n}`).join(' · ')});save();closeModal('#mSched');completeStep();
+  setTimeout(()=>partnerSay(`Accepted! That's ${fmtDay(slotTs,tzOf(S.partner))} at ${fmtHM(slotTs,tzOf(S.partner))} my time 🙌 Bring one question you want to ask me.`),600);});
+
+/* fit check */
+let fitPick=null, pactFromSetup=false;
+const FIT_HINT={yes:"Great. Next you'll lock in your pact.",trial:'No pressure: do two check-ins together, then decide.',no:"That's fine. We'll find you someone else, and they won't see a reason."};
+function openFit(){fitPick=null;$$('#fitResult .choice').forEach(x=>x.classList.remove('on'));$('#fitHint').textContent='';$('#fitSave').disabled=true;openModal('#mFit');}
+$('#fitResult').addEventListener('click',e=>{const b=e.target.closest('.choice');if(!b)return;$$('#fitResult .choice').forEach(x=>x.classList.remove('on'));b.classList.add('on');fitPick=b.dataset.v;$('#fitHint').textContent=FIT_HINT[fitPick];$('#fitSave').disabled=false;});
+$('#fitSave').addEventListener('click',()=>{closeModal('#mFit');
+  if(fitPick==='no'){S.skip.push(S.partner.id);S.partner=null;save();startSearch();return;}
+  S.setup.fit=fitPick;save();completeStep();
+  setTimeout(()=>partnerSay(fitPick==='yes'?"That was a good call. I think we'll work well together.":'Two check-ins and we see how it feels. Sounds fair to me.'),600);});
+
+/* ---------- contact channels ---------- */
+const CH={tandem:['💬','Tandem chat','Right here'],whatsapp:['🟢','WhatsApp','Phone number'],telegram:['✈️','Telegram','@username'],signal:['🔵','Signal','Phone number'],email:['✉️','Email','you@example.com'],phone:['📞','Phone call','Phone number'],discord:['🎮','Discord','username'],sms:['📱','Text message','Phone number']};
+const defaultChannels=()=>['tandem','whatsapp','telegram','signal','email','phone','discord','sms'].map((k,i)=>({k,on:k==='tandem',v:''}));
+function partnerChannels(p){
+  const sets=[['whatsapp','tandem','email'],['telegram','tandem','discord'],['signal','email','tandem'],['tandem','whatsapp','phone']];
+  const set=sets[(p.n.length+p.l.length)%sets.length], h=p.n.toLowerCase();
+  const val={tandem:'Right here',whatsapp:'+•• ••• ••• 214',telegram:'@'+h+'_'+p.l.slice(0,3).toLowerCase(),signal:'+•• ••• ••• 587',email:h+'@mail.com',phone:'+•• ••• ••• 390',discord:h+'.checks.in'};
+  return set.map(k=>({k,v:val[k]}));
+}
+function chRow(c,i,first){const [ic,name]=CH[c.k];
+  const act=c.k==='tandem'?'':`<button class="copy" data-copy="${esc(c.v)}">Copy</button>`;
+  return `<div class="ch ${first?'first':''}"><span class="rank">${i+1}</span><span class="ico">${ic}</span><span><b>${name}</b><small>${esc(c.v||'Not added')}</small></span>${act}</div>`;}
+function renderChannels(){
+  if(!S.channels)S.channels=defaultChannels();
+  const p=S.partner, theirs=partnerChannels(p), mine=S.channels.filter(c=>c.on&&(c.k==='tandem'||c.v.trim()));
+  $('#chThemLbl').textContent=`${p.n} prefers`;
+  $('#chThem').innerHTML=theirs.map((c,i)=>chRow(c,i,i===0)).join('');
+  $('#chMine').innerHTML=mine.length?mine.map((c,i)=>chRow({k:c.k,v:c.k==='tandem'?'Right here':c.v},i,i===0)).join(''):'<div class="empty">Nothing added yet.</div>';
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-copy]');if(!b)return;try{navigator.clipboard.writeText(b.dataset.copy);}catch(err){}b.textContent='Copied';setTimeout(()=>b.textContent='Copy',1400);});
+let chDraft=[];
+function drawChEdit(){
+  $('#chEdit').innerHTML=chDraft.map((c,i)=>{const [ic,name,ph]=CH[c.k];
+    return `<div class="ch-row ${c.on?'':'off'}" data-i="${i}"><input type="checkbox" ${c.on?'checked':''} aria-label="Use ${name}"><span class="ico" style="width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--bg3)">${ic}</span>
+      ${c.k==='tandem'?`<span><b style="font-size:14px">${name}</b><br><small style="color:var(--mute)">Always available</small></span>`:`<input type="text" placeholder="${name} · ${ph}" value="${esc(c.v)}" aria-label="${name}">`}
+      <span class="mv"><button data-mv="-1" ${i===0?'disabled':''} aria-label="Move up">▲</button><button data-mv="1" ${i===chDraft.length-1?'disabled':''} aria-label="Move down">▼</button></span></div>`;}).join('');
+}
+$('#editCh').addEventListener('click',()=>{if(!S.channels)S.channels=defaultChannels();chDraft=S.channels.map(c=>({...c}));drawChEdit();openModal('#mCh');});
+$('#chEdit').addEventListener('input',e=>{const r=e.target.closest('.ch-row'),i=+r.dataset.i;
+  if(e.target.type==='checkbox'){chDraft[i].on=e.target.checked;r.classList.toggle('off',!e.target.checked);}
+  else{chDraft[i].v=e.target.value;if(e.target.value.trim()&&!chDraft[i].on){chDraft[i].on=true;r.classList.remove('off');r.querySelector('[type=checkbox]').checked=true;}}});
+$('#chEdit').addEventListener('click',e=>{const b=e.target.closest('[data-mv]');if(!b)return;const i=+b.closest('.ch-row').dataset.i,j=i+ +b.dataset.mv;
+  [chDraft[i],chDraft[j]]=[chDraft[j],chDraft[i]];drawChEdit();gsap.fromTo(`#chEdit .ch-row[data-i="${j}"]`,{backgroundColor:'#2a1810'},{backgroundColor:'#0c0b10',duration:.8});});
+$('#chSave').addEventListener('click',()=>{S.channels=chDraft;save();closeModal('#mCh');renderChannels();gsap.from('#chMine .ch',{x:-12,opacity:0,stagger:.05,duration:.4});
+  const top=S.channels.find(c=>c.on&&(c.k==='tandem'||c.v.trim()));if(top&&top.k!=='tandem')toast(`${S.partner.n} will see ${CH[top.k][1]} first`);});
+
+/* ---------- profile ---------- */
+function prof(){if(!S.profile)S.profile={email:'',photo:'',bio:'',notify:{due:true,partner:true,quiet:true,summary:false}};return S.profile;}
+function picHTML(photo=prof().photo,name=S.name){return `<span class="pic" style="${photo?`background-image:url(${photo})`:''}">${photo?'':esc((name||'?')[0].toUpperCase())}</span>`;}
+let pfDraft=null, pfRemind='few';
+document.addEventListener('click',e=>{const b=e.target.closest('#pfRemind button');if(!b)return;pfRemind=b.dataset.v;$$('#pfRemind button').forEach(x=>x.classList.toggle('on',x===b));});
+function drawPfPic(){const el=$('#pfPic');el.style.backgroundImage=pfDraft.photo?`url(${pfDraft.photo})`:'';el.textContent=pfDraft.photo?'':(($('#pfName').value||'?')[0]||'?').toUpperCase();$('#pfRemove').style.display=pfDraft.photo?'':'none';}
+function syncNotify(){const hasMail=/\S+@\S+\.\S+/.test($('#pfEmail').value.trim());$$('#pfForm .toggle input').forEach(t=>t.disabled=!hasMail);}
+function youCardHTML(o,mode='static'){
+  const P=prof(), name=o.name??S.name, photo=o.photo??P.photo, bio=o.bio??P.bio, pn=S.partner?groupNames():'your match';
+  const tags=[(S.langs||[]).length?'🗣 '+S.langs.join(', '):null,{fitness:'🏃 Fitness',writing:'✍️ Writing',code:'🛠 Side project',lang:'🗣 Language',money:'💸 Finances',study:'📚 Study'}[S.cat],
+    {daily:'Daily check-ins',weekly:'Weekly check-ins',biweekly:'Bi-weekly check-ins'}[S.freq],
+    {morning:'☀ Morning person',lunch:'🥪 Lunch-break calls',evening:'🌙 Evening calls',flex:'🗓 Flexible timing'}[S.time],{cowork:'🧑‍💻 Likes co-working',both:'🧑‍💻 Check-ins + co-working'}[S.mode],{slow:'🐢 Slow starter',burst:'⚡ Burst worker',deadline:'⏰ Deadline-driven',steady:'🌊 Fairly steady'}[S.estart],styleName(S.style)].filter(Boolean);
+  const sub={edit:'✎ Tap to edit',live:'● Live preview',static:''}[mode];
+  const pic=photo?picHTML(photo,name):`<span class="pic ${name?'':'none'}">${name?esc(name[0].toUpperCase()):'+'}</span>`;
+  const tag=mode==='edit'?'button':'div';
+  return `<${tag} class="you-card"${mode==='edit'?' type="button" data-edit-you aria-label="Edit how you appear"':''}>
+    <div class="mc-top"><div><div class="mc-tag">What ${esc(pn)} sees</div>${sub?`<div class="mc-sub">${sub}</div>`:''}</div></div>
+    <div class="mc-person">${pic}<div style="min-width:0"><h5>${esc(name||'Your first name')}</h5><small>${S.country?`${flag(S.country)} ${esc(ccName(S.country))} · ${fmtHM(Date.now(),myTz())} now · `:''}${photo?'Working on: '+esc(S.goal.trim()||'your goal'):'Add a photo in your profile'}</small></div></div>
+    <div class="traits">${tags.map(t=>`<span>${esc(t)}</span>`).join('')}</div>
+    <p class="quote ${bio?'':'empty-q'}">${bio?`"${esc(bio)}"`:`A line about you, e.g. "Morning runner, terrible at rest days."`}</p>
+    <p class="you-note">You choose what's shown. Email and contact details stay private until you share them.</p>
+  </${tag}>`;
+}
+document.addEventListener('click',e=>{if(e.target.closest('[data-edit-you]'))openProfile();});
+function renderYouMatch(){if(!$('#youMatch'))return;$('#youLbl').textContent=`How ${S.partner.n} will see you`;$('#youMatch').innerHTML=youCardHTML({},'edit');}
+function renderPfPreview(){$('#pfLbl').textContent=S.partner?`Live preview · how ${S.partner.n} sees you`:'Live preview';
+  $('#pfPreview').innerHTML=youCardHTML({name:$('#pfName').value.trim(),bio:$('#pfBio').value.trim(),photo:pfDraft.photo},'live');}
+
+$('#pfBio').addEventListener('input',()=>renderPfPreview());
+function fillTz(){const list=(()=>{try{return Intl.supportedValuesOf('timeZone');}catch(e){return [detectedTz,...Object.values(CITY_TZ),'UTC'];}})();
+  const cur=myTz(); const all=[...new Set([cur,detectedTz,...list])];
+  $('#pfTz').innerHTML=all.map(z=>`<option value="${z}" ${z===cur?'selected':''}>${esc(tzLabel(z))}${z===detectedTz?' · detected':''}</option>`).join('');
+  $('#pfTzHint').textContent=`It's ${fmtHM(Date.now(),cur)} there now. Partners see times converted to their own zone.`;}
+$('#pfTz').addEventListener('change',e=>$('#pfTzHint').textContent=`It's ${fmtHM(Date.now(),e.target.value)} there now. Partners see times converted to their own zone.`);
+let pfLangs=[];
+$('#pfLangs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const l=b.dataset.l;pfLangs=pfLangs.includes(l)?pfLangs.filter(x=>x!==l):[...pfLangs,l];b.classList.toggle('on');renderPfPreview();});
+$('#pfLangAdd').addEventListener('submit',e=>{e.preventDefault();const v=$('#pfLangIn').value.trim();if(!v)return;const l=v[0].toUpperCase()+v.slice(1);if(!pfLangs.includes(l))pfLangs.push(l);$('#pfLangIn').value='';langChips($('#pfLangs'),pfLangs);});
+$('#pfCountry').addEventListener('change',e=>{const cc=e.target.value;if(CC_TZ[cc]){const o=[...$('#pfTz').options].find(x=>x.value===CC_TZ[cc]);if(o){$('#pfTz').value=CC_TZ[cc];$('#pfTz').dispatchEvent(new Event('change'));}}
+  else if(MULTI_TZ.includes(cc))$('#pfTzHint').textContent=`${ccName(cc)} has several time zones. Pick yours above.`;});
+let pfDirty=false;
+$('#pfForm').addEventListener('input',()=>pfDirty=true);$('#pfForm').addEventListener('click',e=>{if(e.target.closest('.lang-chips button,#pfRemind button,#pfRemove'))pfDirty=true;});
+function fillProfile(){pfDirty=false;const P=prof();pfDraft={photo:P.photo};fillTz();$('#pfCountry').innerHTML=countryOptions(S.country);pfLangs=[...(S.langs||[])];langChips($('#pfLangs'),pfLangs);
+  $('#pfName').value=S.name;$('#pfEmail').value=P.email;$('#pfBio').value=P.bio;$('#pfErr').textContent='';
+  $$('#pfForm .toggle input').forEach(t=>t.checked=!!P.notify[t.dataset.n]);
+  pfRemind=P.remind||'few';$$('#pfRemind button').forEach(b=>b.classList.toggle('on',b.dataset.v===pfRemind));
+  drawPfPic();syncNotify();renderPfPreview();}
+const onDash=()=>!$('#vDash').classList.contains('hidden');
+function openProfile(){
+  if(onDash()){ // dashboard: edit in place on the You tab
+    $('#pfHost').appendChild($('#pfForm')); fillProfile(); setTab('you'); setY('profile');
+    setTimeout(()=>$('#pfHost').scrollIntoView({behavior:'smooth',block:'start'}),50); return;}
+  $('#mProfile .sheet').appendChild($('#pfForm')); fillProfile(); openModal('#mProfile');   // before a partner is chosen: quick edit in a sheet
+}
+$('#pfCancel').addEventListener('click',()=>{if(!$('#mProfile').classList.contains('hidden')){closeModal('#mProfile');return;}fillProfile();toast('Changes discarded');});
+$('#pfName').addEventListener('input',()=>{drawPfPic();renderPfPreview();});
+$('#pfEmail').addEventListener('input',syncNotify);
+$('#pfFile').addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+  if(!f.type.startsWith('image/')){$('#pfErr').textContent='That file isn\'t an image.';return;}
+  const img=new Image(),url=URL.createObjectURL(f);
+  img.onload=()=>{const c=document.createElement('canvas'),z=256;c.width=c.height=z;const m=Math.min(img.width,img.height);
+    c.getContext('2d').drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,z,z);URL.revokeObjectURL(url);
+    pfDraft.photo=c.toDataURL('image/jpeg',.85);$('#pfErr').textContent='';drawPfPic();renderPfPreview();gsap.fromTo('#pfPic',{scale:.8},{scale:1,duration:.6,ease:'elastic.out(1,.4)'});};
+  img.onerror=()=>{$('#pfErr').textContent='Couldn\'t read that image. Try a JPG or PNG.';};
+  img.src=url;});
+$('#pfRemove').addEventListener('click',()=>{pfDraft.photo='';drawPfPic();renderPfPreview();});
+$('#pfSave').addEventListener('click',()=>{
+  const name=$('#pfName').value.trim(), email=$('#pfEmail').value.trim();
+  if(!name){if($('.ybody'))setY('profile');$('#pfErr').textContent='Add your first name so your partner knows who you are.';$('#pfName').focus();return;}
+  if(email&&!/\S+@\S+\.\S+/.test(email)){if($('.ybody'))setY('notify');$('#pfErr').textContent='That email doesn\'t look right.';$('#pfEmail').focus();return;}
+  if(!pfLangs.length){$('#pfErr').textContent='Pick at least one language you can chat in.';return;}
+  const P=prof();S.name=name;P.email=email;S.country=$('#pfCountry').value;S.langs=pfLangs;P.tz=$('#pfTz').value===detectedTz?'':$('#pfTz').value;P.bio=$('#pfBio').value.trim();P.photo=pfDraft.photo;
+  $$('#pfForm .toggle input').forEach(t=>P.notify[t.dataset.n]=t.checked); P.remind=pfRemind;
+  const inModal=!$('#mProfile').classList.contains('hidden'); save(); if(inModal)closeModal('#mProfile');
+  if(onDash()){renderDash();show('#vDash');gsap.fromTo('#pfPreview .you-card',{scale:.97},{scale:1,duration:.5,ease:'back.out(2)'});} else if(!$('#vMatch').classList.contains('hidden')){renderYouMatch();gsap.fromTo('#youMatch .you-card',{scale:.97},{scale:1,duration:.5,ease:'back.out(2)'});}
+  toast(email?`Saved. Notifications go to ${email}`:'Profile saved');});
+$('#pfPact').addEventListener('click',()=>{if(!$('#mProfile').classList.contains('hidden'))closeModal('#mProfile');setTab('today');$('details.more').open=true;setTimeout(()=>$('#editPact').click(),250);});
+$('#pfCh').addEventListener('click',()=>{if(!$('#mProfile').classList.contains('hidden'))closeModal('#mProfile');setTab('chat');$('#chMore').open=true;setTimeout(()=>$('#editCh').click(),250);});
+
+/* ---------- tabs ---------- */
+function moveTabPill(){const b=$('#tabs button.on');if(!b)return;const pill=$('.tab-pill');pill.style.width=b.offsetWidth+'px';pill.style.transform=`translateX(${b.offsetLeft}px)`;}
+/* ---------- tips drawer ---------- */
+const TIPS={
+  hi:{ic:'👋',t:'Your first message',items:[['✌️','Two lines is plenty','Say hi and one reason this goal matters to you.'],['❓','End with one question','It gives them an easy way to reply.'],['🙅','Skip the life story','You\'ll cover more on the intro call.']],
+      tries:()=>[`Hi ${S.partner.n}! I'm ${S.name}. I really want to get ${S.goal.trim().toLowerCase()} done this time. What made you sign up?`,`Hey ${S.partner.n} 👋 Fellow ${ESTART[S.estart]?.toLowerCase()||'ADHD brain'} here. When do you usually get your best work done?`]},
+  call:{ic:'📞',t:'Your intro call',items:[['1','Goals (5 min)','What you each want, and your small version for bad days.'],['2','How you fall off (5 min)','Share your pattern so the other knows what helps.'],['3','Agree a nudge (5 min)','How often, how direct, and on which channel.'],['🚪','It\'s fine if it\'s not a fit','Say so kindly. Rematching is normal here.']]},
+  checkin:{ic:'✅',t:'Check-ins that stick',items:[['🌱','The small version counts','A tiny win is still showing up.'],['⚡','One tap is enough','Mood emoji and notes are optional.'],['💬','Reply within a day','A quick emoji back keeps momentum for both of you.']]},
+  stuck:{ic:'🧱',t:'When you\'re stuck',items:[['⏱','Ask for 10 minutes','Hit "I\'m stuck" on Today. Company makes starting easier.'],['🪜','Shrink the step','"Open the file" beats "write the chapter".'],['🎧','Set the scene','Same playlist, same spot, every session.']]},
+  habits:{ic:'🤝',t:'Being good partners',items:[['🙋','Ask, don\'t lecture','"What got in the way?" beats advice.'],['🚀','Celebrate starting','Opening the doc counts.'],['🫶','Assume good intent when they go quiet','Silence usually means overwhelm. Send a no-pressure ping.'],['✂️','Keep messages short','One question at a time.'],['🤝','Agree what a nudge looks like','Do it on your intro call.']]}
+};
+function tipsContext(){const u=S.setup||{};return !u.hi?'hi':!u.fit?'call':S.session?'stuck':'checkin';}
+// tips unlock one stage at a time, in the order you reach them
+function unlockedTips(){const u=S.setup||{};const n=S.checkins.length;return ['hi',(u.hi||u.slot)&&'call',u.fit&&'checkin',u.fit&&(n>=1||S.session)&&'stuck',n>=2&&'habits'].filter(Boolean);}
+function openTips(focus){
+  const ctx=focus||tipsContext(), open=unlockedTips(); if(!open.includes(ctx))open.push(ctx);
+  const earlier=open.filter(k=>k!==ctx).reverse(), order=[ctx,...earlier], locked=Object.keys(TIPS).length-open.length;
+  $('#tipsTitle').textContent={hi:'Before you say hi',call:'Before your intro call',checkin:'Keeping it going',stuck:'Getting unstuck',habits:'Being good partners'}[ctx];
+  $('#tipsBody').innerHTML=order.map((k,i)=>{const T=TIPS[k];const tries=k==='hi'&&T.tries&&S.partner?T.tries():[];
+    return `<details class="tsec" ${i===0?'open':''}><summary><span class="ti">${T.ic}</span>${esc(T.t)}${i===0?'<span class="now">Now</span>':''}</summary>
+      <div class="tl">${T.items.map(([a,b,c])=>`<div><span>${a}</span><span><b>${esc(b)}</b><small>${esc(c)}</small></span></div>`).join('')}</div>
+      ${tries.length?`<div class="try"><span>Tap to use</span>${tries.map(t=>`<button data-try="${esc(t)}">${esc(t)}</button>`).join('')}</div>`:''}</details>${i===0&&earlier.length?'<div class="tearlier">Earlier tips</div>':''}`;}).join('')
+    +(locked>0?`<div class="tlocked">🔒 ${locked} more ${locked===1?'tip unlocks':'tips unlock'} as you and ${esc(S.partner?S.partner.n:'your partner')} go further.</div>`:'');
+  $('#tipsScrim').classList.remove('hidden');$('#tips').setAttribute('aria-hidden','false');$('#tipsFab').classList.remove('ping');
+  gsap.fromTo('#tips',{xPercent:105,visibility:'visible'},{xPercent:0,duration:.45,ease:'power3.out'});gsap.fromTo('#tipsScrim',{opacity:0},{opacity:1,duration:.3});
+  gsap.from('#tipsBody .tsec',{x:30,opacity:0,stagger:.05,duration:.4,delay:.1});
+}
+function closeTips(){gsap.to('#tips',{xPercent:105,duration:.35,ease:'power2.in',onComplete:()=>{$('#tips').setAttribute('aria-hidden','true');gsap.set('#tips',{visibility:'hidden'});}});gsap.to('#tipsScrim',{opacity:0,duration:.25,onComplete:()=>$('#tipsScrim').classList.add('hidden')});}
+$('#tipsFab').addEventListener('click',()=>openTips());
+$('#tipsClose').addEventListener('click',closeTips);
+$('#tipsScrim').addEventListener('click',closeTips);
+addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#tips').getAttribute('aria-hidden')==='false')closeTips();});
+document.addEventListener('click',e=>{const t=e.target.closest('[data-tips]');if(t){openTips(t.dataset.tips);return;}
+  const tr=e.target.closest('[data-try]');if(tr){closeTips();setTab('chat');const i=$('#cInput');i.value=tr.dataset.try;i.focus();}});
+// a quiet dot on the Tips button the first time a new kind of moment comes up
+function pingTips(){const c=unlockedTips().length;if(S.tipsSeen===c)return;S.tipsSeen=c;save();$('#tipsFab').classList.add('ping');gsap.fromTo('#tipsFab',{scale:.9},{scale:1,duration:.6,ease:'elastic.out(1,.4)'});}
+
+function revealTabs(){
+  const has=S.checkins.length>0, b=$('#tabProgress'), was=!b.classList.contains('hidden');
+  b.classList.toggle('hidden',!has); if(!has&&S.tab==='progress')S.tab='today';
+  if(has&&!was&&!S.progressSeen){S.progressSeen=true;save();requestAnimationFrame(()=>{moveTabPill();gsap.fromTo(b,{scale:.6,opacity:0},{scale:1,opacity:1,duration:.6,ease:'back.out(2)'});});setTimeout(()=>milestone('First check-in done ✅','New: the Progress tab shows your shared streak.'),900);S.progressDot=true;save();}
+  b.querySelector('.tab-dot')?.remove(); if(S.progressDot&&has)b.insertAdjacentHTML('beforeend','<i class="tab-dot"></i>');
+}
+function setTab(t,anim=true){
+  if(t==='progress'&&S.progressDot){S.progressDot=false;$('#tabProgress .tab-dot')?.remove();}
+  S.tab=t; if(t==='chat')S.unread=0; save();
+  $$('#tabs button').forEach(b=>{const on=b.dataset.tab===t;b.classList.toggle('on',on);b.setAttribute('aria-selected',on);});
+  $$('.tabp').forEach(p=>p.classList.toggle('on',p.dataset.tab===t));
+  moveTabPill(); setTimeout(moveTabPill,60); renderBadge();
+  if(t==='chat'){const m=$('#msgs');m.scrollTop=m.scrollHeight;}
+  if(anim){gsap.fromTo(`.tabp[data-tab="${t}"] > *`,{y:18,opacity:0},{y:0,opacity:1,duration:.45,stagger:.06,ease:'power3.out'});
+    if(scrollY>$('#tabs').offsetTop-20)scrollTo({top:0,behavior:'smooth'});}
+}
+function renderBadge(){const b=$('#chatBadge');b.textContent=S.unread;b.classList.toggle('hidden',!S.unread);}
+$('#tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.dataset.tab!==S.tab)setTab(b.dataset.tab);});
+addEventListener('resize',moveTabPill);
+try{new ResizeObserver(()=>moveTabPill()).observe($('#tabs'));}catch(e){}
+document.fonts?.ready.then(()=>moveTabPill());
+function renderLatest(){
+  const last=[...S.msgs].reverse().find(m=>m.f==='them'), el=$('#latest');
+  if(!last){el.classList.add('hidden');return;} el.classList.remove('hidden');
+  const who=last.by==='third'&&S.third?S.third:S.partner;
+  el.innerHTML=`<button class="av s" data-peer="${who===S.third?'third':'partner'}" aria-label="View ${esc(who.n)}'s profile" style="background:${portrait(who)} center/cover;border:none;cursor:pointer"></button><div class="body"><h4>Latest from ${esc(who.n)}${S.unread>1?` · ${S.unread} new`:''}</h4><p>${esc(last.t)}</p></div><button class="btn ghost sm" id="goChat"><span>Reply${S.unread?` · ${S.unread} new`:''}</span></button>`;
+  $('#goChat').addEventListener('click',()=>setTab('chat'));
+}
+
+
+/* ---------- I'm stuck: 10 minutes of company ---------- */
+const SESSION_MIN=10; let sessTick=null;
+function renderStuck(){
+  const el=$('#stuckPanel'), p=S.partner;
+  if(!S.setup||!S.setup.fit){el.classList.add('hidden');return;} el.classList.remove('hidden');
+  clearInterval(sessTick);
+  if(S.session&&Date.now()<S.session.end){
+    el.innerHTML=`<h4>Co-working with ${esc(p.n)}</h4><div class="session"><div class="timer" id="timer">10:00</div><div><div class="who"><i></i>${esc(p.n)} is working alongside you</div><small style="color:var(--mute);font-size:13px">Just work on the next tiny step. No talking needed.</small></div><button class="btn ghost sm" id="endSess"><span>End</span></button><div class="tbar"><b id="tbar"></b></div></div>`;
+    $('#endSess').addEventListener('click',()=>endSession(false));
+    const tick=()=>{const left=S.session.end-Date.now();if(left<=0){endSession(true);return;}
+      const m=Math.floor(left/60000),sec=Math.floor(left/1000)%60;$('#timer').textContent=`${m}:${String(sec).padStart(2,'0')}`;$('#tbar').style.width=`${100-left/(SESSION_MIN*600)}%`;};
+    tick(); sessTick=setInterval(tick,1000);
+  } else {
+    el.innerHTML=`<div class="stuck"><div><b>Stuck? Get 10 minutes of company.</b><small>Ping ${esc(p.n)} to work alongside you right now. Starting is the hard part.</small></div><button class="btn" id="stuckBtn"><span>I'm stuck</span></button></div>`;
+    $('#stuckBtn').addEventListener('click',startStuck);
+  }
+}
+function startStuck(){
+  S.msgs.push({f:'me',t:`I'm stuck. Can we do ${SESSION_MIN} minutes together right now?`}); save(); renderMsgs(); renderLatest();
+  const b=$('#stuckBtn'); b.disabled=true; b.querySelector('span').textContent=`Pinging ${S.partner.n}…`;
+  setTimeout(()=>{S.session={end:Date.now()+SESSION_MIN*60000};S.msgs.push({f:'sys',t:`Co-working started · ${SESSION_MIN} min`});save();renderStuck();
+    gsap.fromTo('#stuckPanel',{scale:.96},{scale:1,duration:.6,ease:'elastic.out(1,.5)'});
+    partnerSay(`Joining! Timer's on. I'll be on my own stuff. What's your first tiny step?`);},1600);
+}
+function endSession(done){
+  clearInterval(sessTick); S.session=null; save(); renderStuck();
+  if(done){celebrate();}
+  setTimeout(()=>partnerSay(done?'Nice, we did it! Want to log it as a check-in?':'All good, any start counts. Ping me again anytime.'),500);
+}
+
+/* ---------- grow into a trio ---------- */
+function renderTrio(){
+  const el=$('#trioBox'); if(!el||!S.partner)return; const ready=S.setup&&S.setup.fit;
+  if(S.third){el.innerHTML=`<b>You're a trio with ${esc(S.partner.n)} & ${esc(S.third.n)}</b><p>Streaks count as "together" when all three of you show up. Groups stop at three so everyone still gets noticed.</p><button class="link" id="trioRemove">Go back to a pair</button>`;
+    $('#trioRemove').addEventListener('click',()=>{if(!confirm(`Go back to just you and ${S.partner.n}? ${S.third.n} will be matched with someone else.`))return;closeModal('#mPartner');const n=S.third.n;S.third=null;S.thirdWeeks=[];S.msgs.push({f:'sys',t:`${n} moved on. It's you and ${S.partner.n} again`});save();renderDash();toast('Back to a pair');});return;}
+  el.innerHTML=`<b>Grow into a trio</b><p>Add one more person with a similar goal and energy. You'll both need to agree, and groups stop at three so everyone still gets noticed.</p>${ready?`<button class="btn ghost sm" id="trioStart"><span>Add a third member</span></button>`:`<small style="color:var(--mute)">Available after your intro call with ${esc(S.partner.n)}.</small>`}`;
+  $('#trioStart')?.addEventListener('click',()=>{closeModal('#mPartner');setTimeout(openTrio,250);});
+}
+function trioStep(n){[1,2,3].forEach(i=>$('#ts'+i).classList.toggle('on',i<=n));}
+function openTrio(){
+  trioStep(1);
+  $('#trioBody').innerHTML=`<h3>Add a third member?</h3><p>Three people means more support and more company for co-working. It also means one more person to keep up with, so ${esc(S.partner.n)} has to agree too.</p>
+    <div class="tips" style="margin-bottom:22px"><div><i>👥</i><span><b>Same pact, three people</b><small>Everyone keeps their own goal. Check-ins go to both partners.</small></span></div><div><i>🔥</i><span><b>"Together" means all three</b><small>Your own score still counts on its own, with freezes as usual.</small></span></div></div>
+    <div class="row"><button class="btn ghost" data-close><span>Not now</span></button><button class="btn" id="trioAsk"><span>Ask ${esc(S.partner.n)}</span></button></div>`;
+  $('#trioBody [data-close]').addEventListener('click',()=>closeModal('#mTrio'));
+  $('#trioAsk').addEventListener('click',askPartner);
+  openModal('#mTrio');
+}
+function askPartner(){
+  S.msgs.push({f:'me',t:`Would you be up for adding a third person to our group?`}); save(); renderMsgs(false); renderLatest();
+  $('#trioBody').innerHTML=`<h3>Waiting for ${esc(S.partner.n)}…</h3><p>We sent them the question in your chat.</p><div class="waiting"><span class="typing"><i></i><i></i><i></i></span>${esc(S.partner.n)} is replying</div>`;
+  setTimeout(()=>{S.msgs.push({f:'them',t:`Yes! More people to co-work with sounds good. Someone with a similar pace, ideally 🙂`});save();renderMsgs(false);renderLatest();showCandidate();},2000);
+}
+function thirdCandidate(){
+  const all=Object.values(PEOPLE).flatMap((list,ci)=>list.map((q,i)=>({...q,id:Object.keys(PEOPLE)[ci]+i})));
+  const pool=all.filter(q=>q.id!==S.partner.id&&!S.thirdSkip.includes(q.id));
+  const same=pool.filter(q=>q.id.startsWith(S.cat)); return same[0]||pool[0];
+}
+function showCandidate(){
+  trioStep(2); let c=thirdCandidate(); if(!c){S.thirdSkip=[];c=thirdCandidate();}
+  const sameCat=c.id.startsWith(S.cat);
+  $('#trioBody').innerHTML=`<h3>${esc(S.partner.n)} said yes 🎉</h3><p>Here's who we'd suggest. They'll only see your group if you both invite them.</p>
+    <div class="mcard" style="padding:24px;margin-bottom:20px"><div class="mhead" style="margin-bottom:16px"><div class="av" style="background:${c.c}">${esc(c.n[0])}</div><div><h3>${esc(c.n)}</h3><small>${flag(ccOf(c))} ${esc(c.l)}, ${esc(ccName(ccOf(c)))} · ${fmtHM(Date.now(),tzOf(c))} there (${relLabel(c)})</small></div></div>
+      <div class="why" style="margin-bottom:16px"><div><span>Their goal</span><span>${esc(c.g)}</span></div><div><span>Fits your group</span><span>${sameCat?'Same kind of goal':'Different goal, same pace'}</span></div><div><span>Speaks</span><span>${esc(langsOf(c).join(', '))}</span></div><div><span>Also has</span><span>ADHD 🧠</span></div></div>
+      <p class="mquote" style="margin-bottom:0">"${esc(c.q)}"</p></div>
+    <div class="row"><button class="btn ghost" id="trioOther"><span>↻ Someone else</span></button><button class="btn" id="trioInvite"><span>Invite ${esc(c.n)}</span></button></div>`;
+  gsap.from('#trioBody .mcard',{y:30,opacity:0,duration:.6,ease:'power3.out'});
+  $('#trioOther').addEventListener('click',()=>{S.thirdSkip.push(c.id);save();showCandidate();});
+  $('#trioInvite').addEventListener('click',()=>inviteThird(c));
+}
+function inviteThird(c){
+  trioStep(3);
+  $('#trioBody').innerHTML=`<h3>Invite sent</h3><div class="waiting"><span class="typing"><i></i><i></i><i></i></span>Waiting for ${esc(c.n)} to accept</div>`;
+  setTimeout(()=>{
+    S.third=c; S.thirdWeeks=[]; S.msgs.push({f:'sys',t:`${c.n} joined the group. You're a trio now`}); save();
+    closeModal('#mTrio'); renderDash(); celebrate();
+    setTimeout(()=>partnerSay(`Hi both! Thanks for having me. ${c.q.split('.')[0]}. When's everyone usually free?`,'third'),900);
+  },1800);
+}
+
+/* ---------- time zones ---------- */
+const PREF_OF={Maya:'morning',Theo:'evening',Jules:'evening',Iris:'morning',Sam:'evening',Aiko:'lunch','Tomás':'lunch',Chen:'evening',Noor:'morning',Diego:'evening',Priya:'morning',Lukas:'lunch'};
+const CITY_CC={Lisbon:'PT',Berlin:'DE','Montréal':'CA',Dublin:'IE',Austin:'US',Osaka:'JP',Valencia:'ES',Toronto:'CA',London:'GB','Mexico City':'MX',Bangalore:'IN',Vienna:'AT'};
+const LANGS_OF={Maya:['English','Portuguese'],Theo:['German','English'],Jules:['French','English'],Iris:['English','Irish'],Sam:['English','Spanish'],Aiko:['Japanese','English'],'Tomás':['Spanish','English'],Chen:['English','Mandarin','Japanese'],Noor:['English','Arabic'],Diego:['Spanish','English'],Priya:['English','Hindi','Kannada'],Lukas:['German','English']};
+const COMMON_LANGS=['English','Spanish','French','German','Portuguese','Italian','Romanian','Dutch','Polish','Arabic','Hindi','Mandarin','Japanese','Turkish','Ukrainian','Russian'];
+// countries that sit in a single time zone, so picking one can set the zone for you
+const CC_TZ={PT:'Europe/Lisbon',ES:'Europe/Madrid',FR:'Europe/Paris',DE:'Europe/Berlin',IT:'Europe/Rome',NL:'Europe/Amsterdam',BE:'Europe/Brussels',IE:'Europe/Dublin',GB:'Europe/London',AT:'Europe/Vienna',CH:'Europe/Zurich',PL:'Europe/Warsaw',RO:'Europe/Bucharest',GR:'Europe/Athens',SE:'Europe/Stockholm',NO:'Europe/Oslo',DK:'Europe/Copenhagen',FI:'Europe/Helsinki',CZ:'Europe/Prague',HU:'Europe/Budapest',UA:'Europe/Kyiv',TR:'Europe/Istanbul',IL:'Asia/Jerusalem',AE:'Asia/Dubai',IN:'Asia/Kolkata',JP:'Asia/Tokyo',KR:'Asia/Seoul',SG:'Asia/Singapore',PH:'Asia/Manila',NZ:'Pacific/Auckland',ZA:'Africa/Johannesburg',NG:'Africa/Lagos',KE:'Africa/Nairobi',EG:'Africa/Cairo',AR:'America/Argentina/Buenos_Aires',CO:'America/Bogota',CL:'America/Santiago',PE:'America/Lima'};
+const MULTI_TZ=['US','CA','MX','BR','AU','RU','ID','CN'];
+const COUNTRIES=[...new Set([...Object.keys(CC_TZ),...MULTI_TZ])];
+const ccName=(()=>{let dn=null;try{dn=new Intl.DisplayNames(['en'],{type:'region'});}catch(e){}return cc=>dn?dn.of(cc):cc;})();
+const flag=cc=>cc?String.fromCodePoint(...[...cc].map(c=>127397+c.charCodeAt(0))):'';
+const langsOf=q=>LANGS_OF[q.n]||['English'];
+const shared=q=>langsOf(q).filter(l=>(S.langs||[]).includes(l));
+const CITY_TZ={Lisbon:'Europe/Lisbon',Berlin:'Europe/Berlin','Montréal':'America/Toronto',Dublin:'Europe/Dublin',Austin:'America/Chicago',Osaka:'Asia/Tokyo',Valencia:'Europe/Madrid',Toronto:'America/Toronto',London:'Europe/London','Mexico City':'America/Mexico_City',Bangalore:'Asia/Kolkata',Vienna:'Europe/Vienna'};
+const detectedTz=(()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC';}catch(e){return 'UTC';}})();
+const myTz=()=>(S.profile&&S.profile.tz)||detectedTz;
+const tzOf=q=>CITY_TZ[q.l]||'UTC';
+const ccOf=q=>CITY_CC[q.l]||'';
+function guessCountry(){const tz=myTz();const hit=Object.entries(CC_TZ).find(([,z])=>z===tz);if(hit)return hit[0];
+  const lang=(navigator.language||'').split('-')[1];return COUNTRIES.includes(lang)?lang:'';}
+function tzParts(ts,tz){const o={};new Intl.DateTimeFormat('en-GB',{timeZone:tz,hourCycle:'h23',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).formatToParts(ts).forEach(p=>o[p.type]=+p.value||p.value);return o;}
+function tzOffset(ts,tz){const p=tzParts(ts,tz);return Date.UTC(p.year,p.month-1,p.day,p.hour%24,p.minute)-Math.floor(ts/6e4)*6e4;}
+function tsInTz(daysAhead,hm,tz){const now=tzParts(Date.now(),tz);const [h,m]=hm.split(':').map(Number);const guess=Date.UTC(now.year,now.month-1,now.day+daysAhead,h,m);return guess-tzOffset(guess,tz);}
+const hourIn=(ts,tz)=>tzParts(ts,tz).hour%24;
+const fmtHM=(ts,tz)=>new Intl.DateTimeFormat('en-GB',{timeZone:tz,hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(ts);
+const fmtDay=(ts,tz)=>new Intl.DateTimeFormat('en-GB',{timeZone:tz,weekday:'short',day:'numeric',month:'short'}).format(ts);
+function fmtDayShift(ts,a,b){const x=tzParts(ts,a),y=tzParts(ts,b),d=Date.UTC(y.year,y.month-1,y.day)-Date.UTC(x.year,x.month-1,x.day);return d>0?'(next day) ':d<0?'(day before) ':'';}
+function diffH(a,b){const now=Date.now();return Math.round((tzOffset(now,b)-tzOffset(now,a))/36e5*2)/2;}
+function tzLabel(tz){const city=tz.split('/').pop().replace(/_/g,' ');const off=tzOffset(Date.now(),tz)/36e5;return `${city}, GMT${off>=0?'+':''}${off}`;}
+function relLabel(q){const d=diffH(myTz(),tzOf(q));return d===0?'same time as you':`${d>0?'+':''}${d}h from you`;}
+// spot times typed in chat ("8pm", "at 9", "19:30") and show what that is for the others
+function timeHints(text,senderTz,others){
+  const m=text.match(/\b(?:at\s+)?(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b|\b(\d{1,2}):(\d{2})\b|\bat\s+(\d{1,2})\b/i); if(!m)return '';
+  let h=+(m[1]||m[4]||m[6]), min=+(m[2]||m[5]||0); const ap=(m[3]||'').toLowerCase();
+  if(ap==='pm'&&h<12)h+=12; if(ap==='am'&&h===12)h=0; if(h>23||min>59)return '';
+  const ts=tsInTz(0,`${h}:${min}`,senderTz);
+  const bits=others.filter(o=>o.tz!==senderTz).map(o=>`${fmtHM(ts,o.tz)} ${fmtDayShift(ts,senderTz,o.tz)}for ${o.n}`);
+  return bits.length?`<span class="tz-hint">🕒 ${bits.map(esc).join(' · ')}</span>`:'';
+}
+/* ---------- availability overlap ---------- */
+const BAND_H={morning:[7,11],lunch:[12,14],evening:[18,21],flex:[9,20]};
+const prefOf=q=>q.me?S.time:(PREF_OF[q.n]||'flex');
+function overlapData(people){
+  const me=myTz(), day0=tsInTz(0,'0:00',me);
+  const hours=Array.from({length:24},(_,h)=>{const ts=day0+h*36e5;
+    const st=people.map(q=>{const lh=hourIn(ts,q.tz),b=BAND_H[prefOf(q)],w=q.me&&S.wide?[6,24]:[7,22];return {lh,awake:lh>=w[0]&&lh<w[1],pref:lh>=b[0]&&lh<=b[1]};});
+    return {h,ts,st,ok:st.every(x=>x.awake),best:st.every(x=>x.pref)};});
+  return hours;
+}
+function ranges(hours,key){const out=[];let a=null;hours.forEach((x,i)=>{if(x[key]&&a===null)a=i;if((!x[key]||i===23)&&a!==null){out.push([a,x[key]&&i===23?24:i]);a=null;}});return out;}
+function renderOverlap(el,{onPick}={}){
+  if(!el||!S.partner)return;
+  const people=[{n:'You',tz:myTz(),c:'#f3efe7',me:true},...[S.partner,S.third].filter(Boolean).map(q=>({n:q.n,tz:tzOf(q),c:q.c,l:q.l}))];
+  const hrs=overlapData(people), me=myTz();
+  const nowH=tzParts(Date.now(),me), nowPos=((nowH.hour%24)+nowH.minute/60)/24*100;
+  const row=(q,i)=>`<div class="ov-row"><div class="ov-name"><i style="background:${q.c}"></i><b>${esc(q.n)}</b></div><div class="ov-cells">${hrs.map(x=>`<span class="${x.st[i].pref?'pref':x.st[i].awake?'awake':''}" style="--pc:${q.c}" data-h="${x.h}"></span>`).join('')}<i class="ov-now" style="left:${nowPos}%"></i></div></div>`;
+  const best=ranges(hrs,'best'), ok=ranges(hrs,'ok');
+  const fmtR=([a,b],tz)=>`${fmtHM(hrs[a].ts,tz)}–${fmtHM(hrs[a].ts+(b-a)*36e5,tz)}`;
+  const others=people.slice(1);
+  const summary=best.length
+    ? `Best overlap: <b>${best.map(r=>fmtR(r,me)).join(', ')}</b> your time. That's ${others.map(q=>`${best.map(r=>fmtR(r,q.tz)).join(', ')} for ${esc(q.n)}`).join(' and ')}.`
+    : ok.length ? `Your preferred times don't line up, but you're all awake <b>${ok.map(r=>fmtR(r,me)).join(', ')}</b> your time. Worth agreeing on one of those.`
+    : `There's no hour when everyone is awake between 7:00 and 22:00. Try Flexible timing, or take turns with an early or late call.`;
+  el.innerHTML=`<div class="ov"><div class="ov-axis">${Array.from({length:24},(_,h)=>`<span>${h%3===0?String(h).padStart(2,'0'):''}</span>`).join('')}</div>
+    ${people.map(row).join('')}
+    <div class="ov-row sum"><div class="ov-name"><b>Overlap</b></div><div class="ov-cells">${hrs.map(x=>`<span class="${x.best?'best':x.ok?'ok':''}" data-h="${x.h}" ${x.ok?`role="button" tabindex="0" aria-label="${fmtHM(x.ts,me)} your time"`:''}></span>`).join('')}<i class="ov-now" style="left:${nowPos}%"></i></div></div>
+    <div class="ov-legend"><span><i style="background:var(--awake)"></i>Awake (7:00–22:00 local)</span><span><i style="background:var(--b)"></i>Preferred time</span><span><i style="background:rgba(62,224,176,.25);border:1px solid rgba(62,224,176,.5)"></i>Everyone awake</span><span><i style="background:var(--c)"></i>Everyone's preferred</span><span><i style="background:var(--a);width:3px"></i>Now</span></div>
+    <div class="ov-sum">${summary}</div></div>`;
+  gsap.from(el.querySelectorAll('.ov-cells span'),{scaleY:0,transformOrigin:'bottom',duration:.35,stagger:{each:.004,from:'start'},ease:'power2.out'});
+  // tooltip: every person's local time for the hovered hour
+  let tip=null;
+  const show=(e,h)=>{const x=hrs[h];tip?.remove();tip=document.createElement('div');tip.className='ov-tip';
+    tip.innerHTML=people.map((q,i)=>`${esc(q.n)}: ${fmtHM(x.ts,q.tz)}${x.st[i].awake?'':' 😴'}${x.st[i].pref?' ★':''}`).join('<br>');document.body.appendChild(tip);
+    const r=e.target.getBoundingClientRect();tip.style.left=Math.min(innerWidth-tip.offsetWidth-8,Math.max(8,r.left+r.width/2-tip.offsetWidth/2))+'px';tip.style.top=(r.top-tip.offsetHeight-8)+'px';};
+  el.querySelectorAll('.ov-cells span').forEach(c=>{c.addEventListener('mouseenter',e=>show(e,+c.dataset.h));c.addEventListener('mouseleave',()=>{tip?.remove();tip=null;});});
+  if(onPick)el.querySelectorAll('.ov-row.sum span.ok,.ov-row.sum span.best').forEach(c=>{const go=()=>{tip?.remove();onPick(+c.dataset.h);};c.addEventListener('click',go);c.addEventListener('keydown',e=>{if(e.key==='Enter')go();});});
+}
+
+function renderClocks(){const el=$('#cClock'); if(!el||!S.partner)return; el.textContent=[S.partner,S.third].filter(Boolean).map(q=>`${q.n} ${fmtHM(Date.now(),tzOf(q))}`).join(' · ')+` · you ${fmtHM(Date.now(),myTz())}`;}
+setInterval(renderClocks,30000);
+
+/* ---------- partner photos + public profile ---------- */
+// sample partners get a simple generated portrait so the prototype has faces without loading real photos
+function portrait(q){
+  let h=0;for(const ch of q.n)h=(h*31+ch.charCodeAt(0))>>>0;
+  const skins=['#f1c7a5','#e0ac85','#c68863','#a86b47','#7d4a2e','#5b3420'], hairs=['#1d1a1f','#3b2418','#6b3f22','#b77b3f','#d9b36a','#8c8c96','#2a2350'];
+  const sk=skins[h%skins.length], hr=hairs[(h>>3)%hairs.length], style=(h>>6)%3, top=q.c;
+  const hair=style===0?`<path d="M26 44c0-16 10-26 24-26s24 10 24 26c-4-8-12-12-24-12s-20 4-24 12z" fill="${hr}"/>`
+    :style===1?`<path d="M24 50c-2-20 10-32 26-32s28 12 26 32c-2-6-4-10-6-12 0 0-8 4-20 4s-20-4-20-4c-2 2-4 6-6 12z" fill="${hr}"/><path d="M24 50c-2 14 0 30 4 36h6c-4-10-6-22-4-34zM76 50c2 14 0 30-4 36h-6c4-10 6-22 4-34z" fill="${hr}"/>`
+    :`<circle cx="50" cy="30" r="13" fill="${hr}"/><path d="M28 46c0-14 10-22 22-22s22 8 22 22c-6-6-14-8-22-8s-16 2-22 8z" fill="${hr}"/>`;
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="${top}" opacity=".35"/><rect width="100" height="100" fill="#1b1924" opacity=".55"/><path d="M14 100c2-20 16-30 36-30s34 10 36 30z" fill="${top}"/><rect x="43" y="58" width="14" height="14" rx="6" fill="${sk}"/><ellipse cx="50" cy="46" rx="20" ry="22" fill="${sk}"/>${hair}<circle cx="42.5" cy="48" r="2" fill="#1d1a1f"/><circle cx="57.5" cy="48" r="2" fill="#1d1a1f"/><path d="M44 57c3 3 9 3 12 0" stroke="#1d1a1f" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`;
+  return `url('data:image/svg+xml,${encodeURIComponent(svg).replace(/'/g,'%27')}')`;
+}
+function members(){return [['partner',S.partner],['third',S.third]].filter(x=>x[1]);}
+function renderPeers(){
+  $('#peerStack').innerHTML=members().map(([k,q])=>`<button data-peer="${k}" aria-label="View ${esc(q.n)}'s profile" style="background-image:${portrait(q)}"><i class="on"></i></button>`).join('');
+  $('#peerLinks').innerHTML=members().map(([k,q])=>`<button data-peer="${k}">View ${esc(q.n)}'s profile →</button>`).join('');
+}
+function openPeer(k){
+  const q=k==='third'?S.third:S.partner; if(!q)return;
+  const cc=ccOf(q), weeks=Array.from({length:8},(_,i)=>S.week-i).filter(w=>w>=0&&w<S.week);
+  const theirs=k==='third'?S.thirdWeeks:S.partnerWeeks, shown=weeks.filter(w=>theirs.includes(w)).length;
+  const traits=[`🗣 ${langsOf(q).join(', ')}`,`🎯 ${q.g}`,`🕒 ${TIME[PREF_OF[q.n]||'flex']}`,ESTART[ECOMP[S.estart]]?`⚡ ${ESTART[ECOMP[S.estart]]}`:null,'🧠 ADHD'].filter(Boolean);
+  $('#peerBody').innerHTML=`<div class="peer-hero" style="background:linear-gradient(135deg,${q.c},#1b1924)"><button class="drawer-x x" data-close aria-label="Close">✕</button></div>
+    <div class="peer-main"><div class="peer-pic" style="background-image:${portrait(q)}"></div>
+      <h3>${esc(q.n)}</h3>
+      <div class="meta">${flag(cc)} ${esc(q.l)}, ${esc(ccName(cc))} · ${fmtHM(Date.now(),tzOf(q))} there (${relLabel(q)})</div>
+      <div class="traits">${traits.map(t=>`<span>${esc(t)}</span>`).join('')}</div>
+      <p class="quote">"${esc(q.q)}"</p>
+      <div class="peer-stats"><div><b>${weeks.length?`${shown}/${weeks.length}`:'New'}</b><small>showed up lately</small></div><div><b>${2+(q.n.length%5)}</b><small>partners helped</small></div><div><b>${S.season||1}</b><small>season together</small></div></div>
+      <p class="peer-note">This is what ${esc(q.n)} chose to share. Contact details show under Chat, in the order they prefer.</p>
+    </div>`;
+  $('#peerBody [data-close]').addEventListener('click',()=>closeModal('#mPeer'));
+  openModal('#mPeer');
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-peer]');if(b)openPeer(b.dataset.peer);});
+
+function renderDash(){
+  const p=S.partner;
+  renderPeers();
+  $('#dGreet').innerHTML=S.third?`<span class="hi">Hi ${esc(S.name)},</span>you've got <em>${esc(p.n)}</em> & <em>${esc(S.third.n)}</em>.`:`<span class="hi">Hi ${esc(S.name)},</span>you've got <em>${esc(p.n)}</em>.`;
+  $('#dSub').textContent=`${FREQ[S.freq]} · ${MODE[S.mode]||'Check-ins'} · ${TIME[S.time]} · ${styleName(S.style).slice(2)}`;
+  $('#pactText').innerHTML=`"${esc(S.goal.trim())}"`+(S.minGoal?`<div class="min-line">🌱 On a bad day: <b>${esc(S.minGoal)}</b></div>`:`<div class="min-line">🌱 <button class="link" id="addMin">Add a small version for bad days</button></div>`);
+  $('#addMin')?.addEventListener('click',()=>$('#editPact').click());
+  $('#pactMeta').innerHTML=[FREQ[S.freq]+' check-ins',MODE[S.mode]||'Check-ins',`Partner: ${p.n}`,`Their goal: ${p.g}`].map(t=>`<span class="tag">${esc(t)}</span>`).join('');
+  $('#cAv').outerHTML=`<div class="avs-stack" id="cAv">${members().map(([k,q])=>`<button class="av s" data-peer="${k}" aria-label="View ${esc(q.n)}'s profile" style="background:${portrait(q)} center/cover;border:none;cursor:pointer"></button>`).join('')}</div>`;
+  $('#cName').textContent=S.third?`${p.n}, ${S.third.n} & you`:p.n; $('#lgThem').textContent=S.third?`${groupNames()} (both)`:p.n;
+  renderTrio(); renderClocks(); renderOverlap($('#chatOv'),{onPick:h=>{setTab('chat');const ts=tsInTz(1,`${h}:00`,myTz());const i=$('#cInput');i.value=`How about tomorrow at ${fmtHM(ts,myTz())} my time?`;i.focus();}});
+
+  renderSetup(); renderChannels(); renderLatest(); renderStuck(); setTimeout(pingTips,1200);
+  if(!$('#pfHost').contains($('#pfForm'))&&$('#mProfile').classList.contains('hidden')){$('#pfHost').appendChild($('#pfForm'));} if($('#pfHost').contains($('#pfForm'))&&!pfDirty)fillProfile();
+  revealTabs(); setTab(S.tab||'today',false); applyNew(); setY(S.ysec||'profile');
+  const done=S.checkins.some(c=>c.week===S.week);
+  $('#checkPanel').classList.toggle('hidden',!S.setup.fit);
+  $('#checkPanel').innerHTML = !S.setup.fit ? ''
+    : done
+    ? `<h4>Check-in ${PERIOD[S.freq]}</h4><div class="done-note">✓ Sent. ${esc(p.n)} has been notified.</div><div style="margin-top:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><small style="color:var(--mute)">Prototype: skip ahead to the next period.</small><button class="btn ghost sm" id="advance"><span>Next ${S.freq==='daily'?'day':'period'} →</span></button></div>`
+    : `<h4>Check-in ${PERIOD[S.freq]} <span style="letter-spacing:0;text-transform:none">due in <b class="cd" data-until="${(S.pStart||Date.now())+PLEN[S.freq]}"></b></span></h4>${S.welcome?`<div class="welcome"><b>Welcome back 👋</b><p>${S.welcome==='frozen'?'Last period slipped by, so we used a freeze. Nothing is lost.':'Last period slipped by. That happens, and there\'s nothing to catch up on.'} ${S.minGoal?`Want to just do the small version: <span style="color:var(--c)">${esc(S.minGoal)}</span>?`:'Start with the smallest possible step.'}</p></div>`:''}<div class="checkin-cta"><div><b>Did you do what you said?</b><small>${esc(p.n)} is waiting to hear. ${{once:'One reminder on the day.',few:'A few gentle nudges.',nag:"We'll nag until you check in."}[prof().remind||'few']}</small></div><button class="btn" id="openCheck"><span>Check in</span></button></div>`;
+  $('#openCheck')?.addEventListener('click',openCheck); tickCountdowns();
+  const si=seasonInfo(); $('#psLine').textContent=`${S.third?'Trio':'Pair'} with ${groupNames()} · season ${si.n}, period ${si.at} of ${SEASON}.`; $('#seasonNote').textContent=`Partnerships run in ${SEASON}-period seasons. You're in season ${si.n}, period ${si.at} of ${SEASON}. At the end you both choose: renew, or try someone new.`;
+  $('#advance')?.addEventListener('click',advance);
+
+  // streaks + grid (12 slots ending at current period)
+  // rolling window: a missed period never wipes the score, it just drops off after 8
+  const win=Array.from({length:8},(_,i)=>S.week-i).filter(w=>w>=0&&(w<S.week||S.checkins.some(c=>c.week===w)));
+  const shown=w=>meDid(w)||S.frozen.includes(w);
+  const both=win.filter(w=>shown(w)&&themDid(w)).length, me=win.filter(shown).length;
+  $('#seasonTag').textContent=`Season ${seasonInfo().n} · ${seasonInfo().at}/${SEASON}`;
+  countTo('#sBoth',both,`/${Math.max(win.length,1)} together`); countTo('#sMe',me,`/${Math.max(win.length,1)} you`);
+  $('#freezeLine').innerHTML=`<span>❄ <b>${S.freezes} freeze${S.freezes===1?'':'s'}</b> ready. Used automatically if a period slips by.</span><span>Earn one every 4 check-ins (max 2).</span>`;
+  const start=Math.max(0,S.week-11);
+  $('#weeks').innerHTML=Array.from({length:12},(_,i)=>{const w=start+i;let c='';if(w<S.week||S.checkins.some(x=>x.week===w)){const m=meDid(w),t=themDid(w);c=m&&t?'both':m?'me':t?'them':'';if(!m&&S.frozen.includes(w))c='frozen';}
+    return `<div class="wk ${c} ${w===S.week?'now':''}" ${c==='frozen'?'aria-label="Frozen"':''} title="${S.freq==='daily'?'Day':'Period'} ${w+1}">${c==='frozen'?'❄':''}</div>`;}).join('');
+  gsap.from('#weeks .wk',{scale:0,stagger:.025,duration:.4,ease:'back.out(2)'});
+
+  $('#log').innerHTML = S.checkins.length ? [...S.checkins].reverse().map(c=>`<div class="log-item"><span class="dot" style="background:${c.r==='yes'?'var(--c)':c.r==='part'?'var(--a)':'var(--mute)'}"></span><div><p>${{yes:'Did it',part:'Did the small version',no:'Not this time'}[c.r]}${c.note?' · '+esc(c.note):''}</p><small>${S.freq==='daily'?'Day':'Period'} ${c.week+1}</small></div></div>`).join('') : `<div class="empty">No check-ins yet. Your first one gets you on the board.</div>`;
+  renderMsgs(false);
+}
+function countTo(sel,v,label){const el=$(sel),o={v:+(el.dataset.v||0)};el.dataset.v=v;gsap.to(o,{v,duration:.8,ease:'power2.out',onUpdate:()=>el.innerHTML=`${Math.round(o.v)}<small>${label}</small>`});}
+function advance(){
+  // partner checks in most periods
+  markPartner();
+  if(!S.checkins.some(c=>c.week===S.week)){
+    if(S.freezes>0){S.freezes--;S.frozen.push(S.week);S.welcome='frozen';}
+    else S.welcome='missed';
+  }
+  S.week++; S.pStart=Date.now(); save(); renderDash(); if(S.week%SEASON===0)setTimeout(openSeasonEnd,1200);
+  gsap.fromTo('#checkPanel',{scale:.97},{scale:1,duration:.5,ease:'elastic.out(1,.5)'});
+  setTimeout(()=>partnerSay(S.welcome?`Hey, no stress about last ${S.freq==='daily'?'time':'week'}. Want to start small ${PERIOD[S.freq]}?`:`New ${S.freq==='daily'?'day':'week'}! What's the plan ${PERIOD[S.freq]}?`),900);
+}
+
+/* check-in modal */
+let ciR=null;
+const PROMPTS=['Rate your energy this period in one emoji.','What\'s one thing that helped, even a little?','Describe your workspace right now in five words.','What would make next time 10% easier?','Tiny win you almost didn\'t notice?','What did you avoid, and why do you think that was?','If you could delete one obstacle, which would it be?'];
+let ciMood=null, ciVoiceSec=0, recT=null, recStart=0;
+function resetVoice(){clearInterval(recT);ciVoiceSec=0;$('#ciVoice').innerHTML='<button class="rec" id="recBtn" type="button">🎙 Voice note</button>';}
+document.addEventListener('click',e=>{
+  const em=e.target.closest('#ciEmo button');
+  if(em){ciMood=ciMood===em.dataset.e?null:em.dataset.e;$$('#ciEmo button').forEach(b=>b.classList.toggle('on',b.dataset.e===ciMood));gsap.fromTo(em,{scale:.8},{scale:1,duration:.5,ease:'elastic.out(1,.4)'});return;}
+  const rb=e.target.closest('#recBtn');
+  if(rb){ if(!rb.classList.contains('on')){rb.classList.add('on');recStart=Date.now();rb.textContent='Recording 0:00 · tap to stop';recT=setInterval(()=>{const t=Math.floor((Date.now()-recStart)/1000);rb.textContent=`Recording 0:${String(t).padStart(2,'0')} · tap to stop`;if(t>=59)rb.click();},250);}
+    else{clearInterval(recT);ciVoiceSec=Math.max(1,Math.round((Date.now()-recStart)/1000));$('#ciVoice').innerHTML=`<span class="chip">🎙 Voice note · 0:${String(ciVoiceSec).padStart(2,'0')}<button type="button" id="recDel" aria-label="Remove voice note">✕</button></span>`;} return;}
+  if(e.target.closest('#recDel'))resetVoice();
+});
+function openCheck(){ciR=null;$('#ciNote').value='';ciMood=null;$$('#ciEmo button').forEach(b=>b.classList.remove('on'));resetVoice();
+  $('#ciQ').innerHTML=`<span>This period's question</span>${PROMPTS[S.week%PROMPTS.length]}`;$$('#ciResult .choice').forEach(b=>b.classList.remove('on'));$('#ciSave').disabled=true;$('#ciPrompt').innerHTML=`Your pact: "${esc(S.goal.trim())}"${S.minGoal?`<br><span style="color:var(--c)">Small version: ${esc(S.minGoal)}</span>`:''}<br><span style="font-size:13px">Any answer is fine. Showing up to tell ${esc(S.partner.n)} is what counts.</span>`;openModal('#mCheck');}
+$('#ciResult').addEventListener('click',e=>{const b=e.target.closest('.choice');if(!b)return;$$('#ciResult .choice').forEach(x=>x.classList.remove('on'));b.classList.add('on');ciR=b.dataset.v;$('#ciSave').disabled=false;gsap.fromTo(b,{scale:.92},{scale:1,duration:.5,ease:'elastic.out(1,.4)'});});
+$('#ciSave').addEventListener('click',()=>{
+  const note=$('#ciNote').value.trim();
+  S.checkins.push({week:S.week,r:ciR,note:[ciMood,note].filter(Boolean).join(' ')}); markPartner(); S.welcome=null;
+  const shown=S.checkins.filter(c=>c.r!=='no').length; if(ciR!=='no'&&shown%4===0&&S.freezes<2){S.freezes++;setTimeout(()=>toast('❄ You earned a streak freeze'),1400);}
+  save(); closeModal('#mCheck');
+  const label={yes:'✅ Did it',part:'🌱 Did the small version',no:'🌧 Not this time'}[ciR];
+  S.msgs.push({f:'me',t:`Check-in: ${label}${ciMood?' '+ciMood:''}${ciVoiceSec?` · 🎙 voice note 0:${String(ciVoiceSec).padStart(2,'0')}`:''}${note?' · '+note:''}`}); save();
+  {const n=S.checkins.filter(c=>c.r!=='no').length; if(ciR!=='no'){ if(n===1||n%4===0)celebrate(); else toast(rand(CHEERS)); } else toast('Logged. Thanks for being honest 💛');}
+  renderDash();
+  setTimeout(()=>partnerSay(rand(REPLIES[tone(S.style)][ciR==='no'?'miss':'checkin'])),700);
+  if(S.third)setTimeout(()=>partnerSay(rand(REPLIES.mid[ciR==='no'?'miss':'checkin']),'third'),3400);
+});
+
+/* pact modal */
+$('#editPact').addEventListener('click',()=>{$('#pactMin').value=S.minGoal||'';$('#pactInput').value=S.goal;$('#pactMin').value=S.minGoal||'';openModal('#mPact');});
+$('#pactSave').addEventListener('click',()=>{const v=$('#pactInput').value.trim();closeModal('#mPact');if(v.length<=3)return;S.goal=v;S.minGoal=$('#pactMin').value.trim();
+  if(pactFromSetup&&!S.setup.pact){S.setup.pact=true;S.msgs.push({f:'sys',t:'Pact agreed by you both ✍️'});save();completeStep();setTimeout(()=>partnerSay('Signed on my side too ✍️ Talk at the first check-in.'),600);}
+  else{save();renderDash();toast('Pact updated');}pactFromSetup=false;});
+$('#editPact').addEventListener('click',()=>{pactFromSetup=false;});
+
+function openModal(id){const m=$(id);m.classList.remove('hidden');gsap.fromTo(m,{opacity:0},{opacity:1,duration:.25});gsap.fromTo(m.querySelector('.sheet'),{y:40,scale:.96},{y:0,scale:1,duration:.5,ease:'back.out(1.4)'});}
+function closeModal(id){const m=$(id);gsap.to(m,{opacity:0,duration:.2,onComplete:()=>m.classList.add('hidden')});}
+$$('[data-close]').forEach(b=>b.addEventListener('click',()=>closeModal('#'+b.closest('.modal').id)));
+$$('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)closeModal('#'+m.id);}));
+addEventListener('keydown',e=>{if(e.key==='Escape')$$('.modal:not(.hidden)').forEach(m=>closeModal('#'+m.id));});
+
+/* chat */
+function renderMsgs(animLast=true){
+  const box=$('#msgs');
+  const ppl=[{n:'you',tz:myTz()},...[S.partner,S.third].filter(Boolean).map(q=>({n:q.n,tz:tzOf(q)}))];
+  box.innerHTML=S.msgs.map(m=>{const who=m.by==='third'?S.third:S.partner;const stz=m.f==='me'?myTz():who?tzOf(who):myTz();
+    const hint=m.f==='sys'?'':timeHints(m.t,stz,ppl.filter(x=>x.n!==(m.f==='me'?'you':who&&who.n)));
+    return `<div class="msg ${m.f}">${m.f==='them'&&S.third&&who?`<span class="by" style="color:${who.c}">${esc(who.n)}</span>`:''}${esc(m.t)}${hint}</div>`;}).join('');
+  if(animLast&&box.lastElementChild)gsap.from(box.lastElementChild,{y:12,opacity:0,scale:.95,duration:.35,ease:'back.out(2)'});
+  box.scrollTop=box.scrollHeight;
+}
+function send(t){if(!t.trim())return;S.msgs.push({f:'me',t:t.trim()});const first=!S.setup.hi;S.setup.hi=true;save();renderMsgs();if(first){completeStep();setTimeout(()=>partnerSay(`Hey ${S.name}! Want to hop on a quick intro call first? Pick a time that works 👆`),600);return;}
+  const r=REPLIES[tone(S.style)], low=t.toLowerCase();
+  const pool=/check|done|did it|✅/.test(low)?r.checkin:/rough|bad|miss|tired|hard/.test(low)?r.miss:r.chat;
+  setTimeout(()=>partnerSay(rand(pool)),500);
+  if(S.third&&Math.random()<.6)setTimeout(()=>partnerSay(rand(REPLIES.mid[pool===r.checkin?'checkin':pool===r.miss?'miss':'chat']),'third'),3200);}
+let typingEl=null;
+function partnerSay(t,by){
+  const box=$('#msgs'); typingEl?.remove();
+  typingEl=document.createElement('div');typingEl.className='msg them';typingEl.innerHTML='<span class="typing"><i></i><i></i><i></i></span>';
+  box.appendChild(typingEl);box.scrollTop=box.scrollHeight;gsap.from(typingEl,{opacity:0,y:8,duration:.3});
+  setTimeout(()=>{typingEl?.remove();typingEl=null;S.msgs.push(by?{f:'them',t,by}:{f:'them',t});if(S.tab!=='chat'){S.unread=(S.unread||0)+1;gsap.fromTo('#chatBadge',{scale:.4},{scale:1,duration:.5,ease:'back.out(3)'});}save();renderMsgs();renderBadge();renderLatest();},900+Math.min(t.length*25,1600));
+}
+$('#composer').addEventListener('submit',e=>{e.preventDefault();send($('#cInput').value);$('#cInput').value='';});
+$('#quick').addEventListener('click',e=>{if(e.target.tagName==='BUTTON')send(e.target.textContent);});
+const rand=a=>a[Math.floor(Math.random()*a.length)];
+
+/* partnership actions */
+const CONFIRMS={
+  rematch:{q:()=>`Switch from ${S.partner.n}? They'll just see that the season ended.`,yes:'Yes, switch',go:()=>{S.skip.push(S.partner.id);S.partner=null;save();startSearch();}},
+  reset:{q:()=>'This deletes everything on this device and can\'t be undone.',yes:'Yes, start over',go:()=>{S=blank();save();hydrateOnb();show('#vIntro');}}
+};
+function resetConfirms(){$$('#mPartner .confirm').forEach(c=>c.innerHTML=`<button class="btn ghost sm" data-ask><span>${c.dataset.confirm==='rematch'?'Switch partner…':'Start over…'}</span></button>`);}
+$('#mPartner').addEventListener('click',e=>{
+  const box=e.target.closest('.confirm'); if(!box)return; const C=CONFIRMS[box.dataset.confirm];
+  if(e.target.closest('[data-ask]')){box.innerHTML=`<span class="ask">${esc(C.q())}</span><button class="btn sm yes" data-yes><span>${C.yes}</span></button><button class="btn ghost sm" data-no><span>Cancel</span></button>`;gsap.from(box.children,{y:6,opacity:0,stagger:.05,duration:.3});}
+  else if(e.target.closest('[data-no]'))resetConfirms();
+  else if(e.target.closest('[data-yes]')){closeModal('#mPartner');setTimeout(C.go,250);}
+});
+const FORM_SECS=['profile','place','notify'];
+function setY(k){
+  S.ysec=k; save();
+  $$('#ynav button').forEach(b=>b.classList.toggle('on',b.dataset.y===k));
+  $$('.ybody .ysec').forEach(x=>x.classList.toggle('on',x.dataset.ysec===k));
+  $('.ybody').classList.toggle('formsec',FORM_SECS.includes(k));
+  gsap.fromTo(`.ybody .ysec[data-ysec="${k}"]`,{opacity:0,y:10},{opacity:1,y:0,duration:.35,ease:'power2.out'});
+}
+$('#ynav').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setY(b.dataset.y);});
+function openPartner(){resetConfirms();renderTrio();
+  const si=seasonInfo();$('#mpSub').textContent=`With ${groupNames()} since season 1 · ${S.checkins.length} check-in${S.checkins.length===1?'':'s'} so far.`;
+  openModal('#mPartner');}
+$('#openPartner').addEventListener('click',openPartner);
+
+/* fx */
+const CHEERS=['Logged. That counts 🎉','Showing up is the whole game 💪','Future you says thanks ✨','Another square on the board 🌱','You did the hard part: starting 🚀'];
+function isCalm(){return !!(S.profile&&S.profile.calm);}
+function celebrate(){
+  if(isCalm()){toast(rand(CHEERS));return;}
+  const kind=Math.floor(Math.random()*3);
+  if(kind===0)confetti();
+  else if(kind===1){const em=['🎉','🔥','🌱','💪','✨'];for(let i=0;i<18;i++){const d=document.createElement('div');d.className='emoji-pop';d.textContent=rand(em);d.style.left=innerWidth/2+'px';d.style.top=innerHeight*.6+'px';document.body.appendChild(d);
+    gsap.to(d,{x:(Math.random()-.5)*innerWidth*.6,y:-innerHeight*(.3+Math.random()*.4),rotation:(Math.random()-.5)*90,duration:1.2+Math.random()*.6,ease:'power2.out'});gsap.to(d,{opacity:0,delay:1,duration:.6,onComplete:()=>d.remove()});}}
+  else{for(let i=0;i<3;i++){const r=document.createElement('div');r.className='ring-pop';r.style.borderColor=['#3ee0b0','#7c6cff','#ff7a4d'][i];document.body.appendChild(r);gsap.fromTo(r,{scale:.2,opacity:1},{scale:14+i*4,opacity:0,duration:1.3,delay:i*.15,ease:'power2.out',onComplete:()=>r.remove()});}}
+  setTimeout(()=>toast(rand(CHEERS)),300);
+}
+const TS=[1,1.07,1.14,1.22,1.3],TSN=['Default','Comfy','Large','Larger','Largest'];
+function tsIdx(P){return P.ts!=null?P.ts:(P.big?2:0);}
+function applyComfort(){const P=S.profile||{};const i=tsIdx(P),th=P.theme||'dark';
+  document.body.classList.toggle('calm',!!P.calm);document.body.classList.toggle('bigtext',i>0);gsap.globalTimeline.timeScale(P.calm?40:1);
+  document.documentElement.style.setProperty('--ts',TS[i]);document.documentElement.classList.toggle('light',th==='light');
+  if($('#cfCalm')){$('#cfCalm').checked=!!P.calm;const r=$('#cfTs');r.value=i;r.style.setProperty('--p',i/4*100+'%');r.setAttribute('aria-valuetext',TSN[i]);
+    $('#cfTsOut').textContent=Math.round(TS[i]*100)+'%';$$('#cfTicks span').forEach(t=>t.classList.toggle('on',+t.dataset.v===i));
+    $$('#cfTheme button').forEach(b=>{b.classList.toggle('on',b.dataset.v===th);b.setAttribute('aria-checked',b.dataset.v===th);});}
+  requestAnimationFrame(()=>typeof moveTabPill==='function'&&moveTabPill());}
+$('#cfCalm').addEventListener('change',e=>{prof().calm=e.target.checked;save();applyComfort();toast(e.target.checked?'Calm mode on':'Calm mode off');});
+function setTs(v){const P=prof();P.ts=Math.max(0,Math.min(4,+v));P.big=P.ts>0;save();applyComfort();}
+$('#cfTs').addEventListener('input',e=>setTs(e.target.value));
+$('#cfTicks').addEventListener('click',e=>{const t=e.target.closest('span');if(t)setTs(t.dataset.v);});
+$('#cfTheme').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const h=document.documentElement;
+  if(!prof().calm){h.classList.add('theme-anim');setTimeout(()=>h.classList.remove('theme-anim'),400);}
+  prof().theme=b.dataset.v;save();applyComfort();});
+$('#openGuide').addEventListener('click',()=>openTips('habits'));
+
+/* countdowns */
+const PLEN={daily:864e5,weekly:6048e5,biweekly:12096e5};
+function fmtLeft(ms){if(ms<=0)return'now';const d=Math.floor(ms/864e5),h=Math.floor(ms/36e5)%24,m=Math.floor(ms/6e4)%60;return d?`${d}d ${h}h`:h?`${h}h ${m}m`:`${Math.max(1,m)}m`;}
+function tickCountdowns(){$$('[data-until]').forEach(el=>el.textContent=fmtLeft(+el.dataset.until-Date.now()));}
+setInterval(tickCountdowns,30000);
+
+/* seasons */
+const SEASON=6;
+function seasonInfo(){const idx=S.week%SEASON;return {n:S.season||1,at:Math.min(idx+1,SEASON)};}
+function openSeasonEnd(){
+  const from=S.week-SEASON, weeks=Array.from({length:SEASON},(_,i)=>from+i);
+  const me=weeks.filter(w=>meDid(w)||S.frozen.includes(w)).length, both=weeks.filter(w=>meDid(w)&&themDid(w)).length;
+  $('#seasonT').textContent=`Season ${S.season} is done 🎬`;
+  $('#seasonP').textContent=`Six periods with ${S.partner.n}. Keep going together, or try someone new. Either choice is a good one, and nobody gets told why.`;
+  $('#seasonStats').innerHTML=`<div><b>${me}/${SEASON}</b><small>you showed up</small></div><div><b>${both}/${SEASON}</b><small>together</small></div><div><b>${S.checkins.filter(c=>c.r==='part').length}</b><small>small versions</small></div>`;
+  openModal('#mSeason');
+}
+$('#seasonRenew').addEventListener('click',()=>{S.season=(S.season||1)+1;save();closeModal('#mSeason');renderDash();celebrate();setTimeout(()=>partnerSay(`Season ${S.season}, let's go 🙌 Anything you want to change this time?`),700);});
+$('#seasonNew').addEventListener('click',()=>{closeModal('#mSeason');S.skip.push(S.partner.id);S.partner=null;save();startSearch();});
+
+function confetti(){if(isCalm())return;const cols=['#ff7a4d','#7c6cff','#3ee0b0','#f3efe7'];for(let i=0;i<60;i++){const d=document.createElement('div');d.className='confetti';d.style.background=cols[i%4];d.style.left=innerWidth/2+'px';d.style.top=innerHeight/2+'px';document.body.appendChild(d);
+  gsap.to(d,{x:(Math.random()-.5)*innerWidth*.9,y:(Math.random()-.8)*innerHeight*.8,rotation:Math.random()*720,duration:1+Math.random(),ease:'power3.out'});
+  gsap.to(d,{y:'+=300',opacity:0,delay:.9,duration:1,ease:'power1.in',onComplete:()=>d.remove()});}}
+function toast(t){const el=document.createElement('div');el.className='toast';el.textContent=t;document.body.appendChild(el);gsap.from(el,{y:30,opacity:0,duration:.4});gsap.to(el,{y:30,opacity:0,delay:2,duration:.3,onComplete:()=>el.remove()});}
+
+/* boot */
+$('#begin').addEventListener('click',()=>{S.started=true;save();show('#vOnb');renderStep();});
+hydrateOnb(); applyComfort();
+if(S.partner){renderDash();show('#vDash');} else if(!S.started){show('#vIntro');gsap.from('.intro>*, .flow div',{y:24,opacity:0,stagger:.07,duration:.7,ease:'power3.out',delay:.1});} else {show('#vOnb');renderStep();}
+</script>
+</body>
+</html>

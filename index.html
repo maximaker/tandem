@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tandem — Find the person who keeps you going</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0c0b10; --bg2:#14121b; --ink:#f3efe7; --mute:#9a95a6; --line:#2a2733;
+  --a:#ff7a4d; --b:#7c6cff; --c:#3ee0b0;
+  --serif:'Inter Tight',system-ui,sans-serif; --sans:'Inter',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:auto}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--a);color:#000}
+
+/* cursor */
+.cursor{position:fixed;top:0;left:0;width:34px;height:34px;border:1px solid var(--ink);border-radius:50%;pointer-events:none;z-index:999;transform:translate(-50%,-50%);mix-blend-mode:difference;transition:width .3s,height .3s,background .3s}
+.cursor.hover{width:70px;height:70px;background:var(--ink)}
+@media (hover:none){.cursor{display:none}}
+
+/* loader */
+.loader{position:fixed;inset:0;background:var(--bg);z-index:1000;display:grid;place-items:center}
+.loader .dots{display:flex;gap:18px}
+.loader .dot{width:18px;height:18px;border-radius:50%}
+.loader .dot:nth-child(1){background:var(--a)} .loader .dot:nth-child(2){background:var(--b)}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;justify-content:space-between;align-items:center;padding:22px 5vw;backdrop-filter:blur(10px);background:linear-gradient(var(--bg),transparent)}
+.logo{font-family:var(--serif);font-size:24px;font-weight:500;display:flex;align-items:center;gap:10px}
+.logo i{display:inline-flex}
+.logo i b{width:12px;height:12px;border-radius:50%;display:block}
+.logo i b:first-child{background:var(--a)} .logo i b:last-child{background:var(--b);margin-left:-5px;mix-blend-mode:screen}
+nav ul{display:flex;gap:34px;list-style:none;font-size:14px;color:var(--mute)}
+nav ul a:hover{color:var(--ink)}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:14px 26px;border-radius:100px;background:var(--ink);color:var(--bg);font-weight:600;font-size:14px;border:none;cursor:pointer;position:relative;overflow:hidden;font-family:var(--sans)}
+.btn span{position:relative;z-index:1}
+.btn::before{content:'';position:absolute;inset:0;background:var(--a);transform:translateY(101%);transition:transform .45s cubic-bezier(.7,0,.2,1);border-radius:inherit}
+.btn:hover::before{transform:translateY(0)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+@media(max-width:800px){nav ul{display:none}}
+
+/* hero */
+.hero{height:100vh;min-height:640px;position:relative;display:flex;align-items:center;padding:0 5vw}
+#gl{position:absolute;inset:0;width:100%;height:100%}
+.hero-inner{position:relative;z-index:2;max-width:900px;pointer-events:none}
+.hero-inner .btn,.hero-inner a{pointer-events:auto}
+.eyebrow{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);margin-bottom:28px;display:flex;align-items:center;gap:12px}
+.eyebrow::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--c);animation:pulse 2s infinite}
+@keyframes pulse{50%{opacity:.3}}
+h1{font-family:var(--serif);font-weight:500;font-size:clamp(48px,8.5vw,128px);line-height:.95;letter-spacing:-.045em}
+h1 em{font-style:italic;color:var(--a)}
+.line{overflow:hidden;display:block}
+.line>span{display:inline-block}
+.hero p{max-width:470px;color:var(--mute);font-size:18px;line-height:1.6;margin:32px 0 40px}
+.hero-ctas{display:flex;gap:14px;flex-wrap:wrap}
+.scroll-hint{position:absolute;bottom:34px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:.2em;color:var(--mute);z-index:2;display:flex;flex-direction:column;align-items:center;gap:10px}
+.scroll-hint::after{content:'';width:1px;height:40px;background:linear-gradient(var(--mute),transparent);animation:drop 1.8s infinite}
+@keyframes drop{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+section{padding:140px 5vw;position:relative}
+.label{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--a);margin-bottom:20px}
+h2{font-family:var(--serif);font-weight:500;font-size:clamp(38px,5.5vw,80px);line-height:1;letter-spacing:-.02em}
+h2 em{font-style:italic;color:var(--b)}
+
+/* marquee */
+.marquee{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:26px 0;overflow:hidden;white-space:nowrap}
+.marquee-track{display:inline-flex;gap:60px;font-family:var(--serif);font-size:34px;font-style:italic;color:var(--mute)}
+.marquee-track span{display:inline-flex;align-items:center;gap:60px}
+.marquee-track span::after{content:'✦';font-style:normal;color:var(--a);font-size:18px}
+
+/* statement */
+.statement h2{max-width:1100px;font-size:clamp(32px,4.4vw,64px);line-height:1.15}
+.statement .w{opacity:.12;display:inline-block;margin-right:.25em}
+
+/* how it works — pinned */
+.how{padding:0}
+.how-pin{height:100vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:6vw;padding:0 5vw}
+.how-steps{position:relative;height:320px}
+.step{position:absolute;inset:0;opacity:0}
+.step .num{font-family:var(--serif);font-size:15px;color:var(--mute);margin-bottom:22px}
+.step h3{font-family:var(--serif);font-weight:400;font-size:clamp(34px,4vw,56px);line-height:1.05;margin-bottom:22px}
+.step p{color:var(--mute);font-size:17px;line-height:1.65;max-width:440px}
+.progress{display:flex;gap:8px;margin-top:40px;position:absolute;bottom:-60px}
+.progress i{width:40px;height:3px;background:var(--line);border-radius:3px;overflow:hidden;display:block}
+.progress i b{display:block;height:100%;width:0;background:var(--a)}
+.how-visual{aspect-ratio:1;max-height:70vh;position:relative;display:grid;place-items:center}
+.orbit{position:absolute;border:1px dashed var(--line);border-radius:50%}
+.o1{width:100%;height:100%}.o2{width:66%;height:66%}.o3{width:33%;height:33%}
+.node{position:absolute;width:64px;height:64px;border-radius:50%;display:grid;place-items:center;font-family:var(--serif);font-size:24px;color:#000}
+.node.you{background:var(--a)}
+.node.them{background:var(--b);color:#fff}
+.chip{position:absolute;padding:8px 14px;border-radius:100px;background:var(--bg2);border:1px solid var(--line);font-size:13px;white-space:nowrap;opacity:0}
+.link-line{position:absolute;height:2px;background:linear-gradient(90deg,var(--a),var(--b));transform-origin:left;transform:scaleX(0)}
+@media(max-width:800px){.how-pin{grid-template-columns:1fr;gap:20px;padding-top:80px}.how-visual{max-height:38vh}.how-steps{height:280px}}
+
+/* matcher */
+.matcher{background:var(--bg2);border-radius:40px;margin:0 2vw}
+.matcher-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:6vw;margin-top:70px;align-items:start}
+.q{margin-bottom:44px}
+.q h4{font-size:14px;color:var(--mute);font-weight:500;margin-bottom:16px;display:flex;gap:10px}
+.q h4 b{color:var(--ink);font-weight:600}
+.opts{display:flex;flex-wrap:wrap;gap:10px}
+.opt{padding:12px 20px;border-radius:100px;border:1px solid var(--line);background:transparent;color:var(--ink);font-family:var(--sans);font-size:15px;cursor:pointer;transition:border-color .25s,background .25s,color .25s,transform .2s}
+.opt:hover{border-color:var(--mute);transform:translateY(-2px)}
+.opt.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.range{width:100%;-webkit-appearance:none;appearance:none;height:4px;border-radius:4px;background:var(--line);outline:none}
+.range::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:var(--a);cursor:grab;box-shadow:0 0 0 6px rgba(255,122,77,.2)}
+.range::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--a);border:none}
+.range-labels{display:flex;justify-content:space-between;font-size:12px;color:var(--mute);margin-top:12px}
+
+.seg{display:inline-flex;padding:4px;border-radius:100px;border:1px solid var(--line);background:var(--bg);margin-bottom:16px;position:relative}
+.seg button{position:relative;z-index:1;background:none;border:none;color:var(--mute);font-family:var(--sans);font-size:13px;font-weight:500;padding:9px 16px;border-radius:100px;cursor:pointer;transition:color .3s}
+.seg button.on{color:var(--bg)}
+.seg i{position:absolute;top:4px;bottom:4px;left:4px;border-radius:100px;background:var(--ink);transition:transform .45s cubic-bezier(.6,1.4,.4,1),width .45s}
+.flip{position:relative;transform-style:preserve-3d;transition:transform .8s cubic-bezier(.6,.05,.2,1)}
+.flip.back{transform:rotateY(180deg)}
+.flip>.match-card{backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.flip>.match-card.you{position:absolute;inset:0;transform:rotateY(180deg);display:flex;flex-direction:column}
+.match-card.you::before{background:radial-gradient(var(--a),transparent 70%)}
+.you .avatar{background:var(--bg2);border:1.5px dashed var(--mute);color:var(--mute);font-size:24px}
+.you .name-in{background:none;border:none;border-bottom:1px dashed var(--line);font-family:var(--serif);font-size:30px;color:var(--ink);width:100%;outline:none;padding:0 0 2px}
+.you .name-in:focus,.you .bio-in:focus{border-color:var(--a)}
+.you .bio-in{font-family:var(--serif);font-style:italic;font-size:18px;line-height:1.5;color:var(--ink);border:none;border-left:2px solid var(--b);padding:2px 0 2px 16px;background:none;width:100%;resize:none;outline:none;margin-bottom:22px;height:84px}
+.you .bio-in::placeholder,.you .name-in::placeholder{color:var(--mute)}
+.you-note{font-size:13px;color:var(--mute);line-height:1.5;margin-top:auto;padding-top:6px}
+.card-wrap{position:sticky;top:120px;perspective:1200px}
+.match-card{background:var(--bg);border:1px solid var(--line);border-radius:28px;padding:34px;transform-style:preserve-3d;will-change:transform;position:relative;overflow:hidden}
+.match-card::before{content:'';position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(var(--b),transparent 70%);opacity:.25;top:-120px;right:-100px;filter:blur(20px)}
+.mc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;position:relative}
+.mc-tag{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--mute)}
+.ring{position:relative;width:86px;height:86px}
+.ring svg{transform:rotate(-90deg)}
+.ring .val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;white-space:nowrap;font-family:var(--serif);font-size:22px}
+.mc-person{display:flex;gap:18px;align-items:center;margin-bottom:26px;position:relative}
+.avatar{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;font-family:var(--serif);font-size:28px;color:#fff;flex-shrink:0}
+.mc-person h5{font-family:var(--serif);font-size:30px;font-weight:400}
+.mc-person small{color:var(--mute);font-size:14px}
+.traits{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px}
+.traits span{font-size:13px;padding:6px 12px;border-radius:100px;background:var(--bg2);border:1px solid var(--line)}
+.quote{font-family:var(--serif);font-style:italic;font-size:18px;line-height:1.5;color:var(--mute);border-left:2px solid var(--a);padding-left:16px;margin-bottom:28px}
+.mc-actions{display:flex;gap:10px}
+.mc-actions .btn{flex:1;justify-content:center}
+@media(max-width:900px){.matcher-grid{grid-template-columns:1fr}.card-wrap{position:relative;top:0}}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line)}
+.stat{padding:50px 0;border-right:1px solid var(--line);padding-right:20px}
+.stat:last-child{border:none}
+.stat:not(:first-child){padding-left:30px}
+.stat .n{font-family:var(--serif);font-size:clamp(44px,5vw,76px);font-weight:300;line-height:1}
+.stat .n sup{font-size:.4em;color:var(--a);vertical-align:top;margin-left:4px}
+.stat p{color:var(--mute);font-size:14px;margin-top:14px;line-height:1.5}
+@media(max-width:800px){.stats{grid-template-columns:1fr 1fr}.stat{border-bottom:1px solid var(--line)}.stat:nth-child(2){border-right:none}.stat:nth-child(3){padding-left:0}}
+
+/* stories: horizontal scroll */
+.stories{padding:0;overflow:hidden}
+.stories-pin{height:100vh;display:flex;flex-direction:column;justify-content:center}
+.stories-head{padding:0 5vw;margin-bottom:60px;display:flex;justify-content:space-between;align-items:end;gap:30px;flex-wrap:wrap}
+.stories-track{display:flex;gap:28px;padding:0 5vw;width:max-content}
+.story{width:min(440px,80vw);flex-shrink:0;background:var(--bg2);border:1px solid var(--line);border-radius:28px;padding:36px;display:flex;flex-direction:column;justify-content:space-between;min-height:360px;transition:transform .4s,border-color .4s}
+.story:hover{transform:translateY(-8px) rotate(-.6deg);border-color:var(--mute)}
+.story blockquote{font-family:var(--serif);font-size:24px;line-height:1.35;font-weight:300}
+.pair{display:flex;align-items:center;gap:14px;margin-top:30px}
+.pair .avs{display:flex}
+.pair .avs i{width:40px;height:40px;border-radius:50%;border:2px solid var(--bg2);display:grid;place-items:center;font-style:normal;font-size:14px;font-family:var(--serif);color:#fff}
+.pair .avs i+i{margin-left:-12px}
+.pair small{color:var(--mute);font-size:13px;line-height:1.4}
+.pair small b{color:var(--ink);display:block;font-weight:500}
+.streak{display:inline-flex;gap:6px;align-items:center;font-size:12px;color:var(--c);margin-bottom:24px}
+
+/* pricing */
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:70px}
+.plan{border:1px solid var(--line);border-radius:28px;padding:38px;position:relative;transition:transform .4s,background .4s}
+.plan:hover{transform:translateY(-6px)}
+.plan.feat{background:var(--ink);color:var(--bg)}
+.plan.feat .pmute{color:#5c586a}
+.plan h4{font-family:var(--serif);font-weight:400;font-size:26px}
+.price{font-family:var(--serif);font-size:52px;font-weight:300;margin:24px 0 6px}
+.price small{font-size:16px;font-family:var(--sans)}
+.pmute{color:var(--mute);font-size:14px;line-height:1.6}
+.plan ul{list-style:none;margin:28px 0 34px;display:grid;gap:12px;font-size:15px}
+.plan li::before{content:'→';margin-right:10px;color:var(--a)}
+.plan .btn{width:100%;justify-content:center}
+.plan.feat .btn{background:var(--bg);color:var(--ink)}
+.badge{position:absolute;top:24px;right:24px;font-size:11px;padding:6px 12px;border-radius:100px;background:var(--a);color:#000;font-weight:600;letter-spacing:.05em}
+@media(max-width:900px){.plans{grid-template-columns:1fr}}
+
+/* cta */
+.cta{text-align:center;padding:180px 5vw;overflow:hidden}
+.cta h2{font-size:clamp(48px,9vw,150px)}
+.cta form{max-width:560px;margin:60px auto 0;display:grid;gap:14px;text-align:left}
+.field{position:relative}
+.field textarea,.field input{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:22px 20px 12px;color:var(--ink);font-family:var(--sans);font-size:16px;outline:none;transition:border-color .3s;resize:none}
+.field textarea{height:110px;padding-top:28px}
+.field label{position:absolute;left:20px;top:18px;color:var(--mute);font-size:15px;pointer-events:none;transition:all .25s}
+.field textarea:focus,.field input:focus{border-color:var(--a)}
+.field textarea:focus+label,.field textarea:not(:placeholder-shown)+label,.field input:focus+label,.field input:not(:placeholder-shown)+label{top:8px;font-size:11px;letter-spacing:.08em;color:var(--a)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:600px){.row2{grid-template-columns:1fr}}
+.cta .btn{justify-content:center;padding:20px}
+.sent{text-align:center;font-family:var(--serif);font-size:28px;display:none;margin-top:40px}
+
+footer{padding:40px 5vw;border-top:1px solid var(--line);display:flex;justify-content:space-between;color:var(--mute);font-size:13px;flex-wrap:wrap;gap:20px}
+
+.reveal{opacity:0;transform:translateY(40px)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* themed scrollbars */
+*{scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:10px;border:3px solid transparent;background-clip:padding-box}
+::-webkit-scrollbar-thumb:hover{background:var(--mute);background-clip:padding-box;border:3px solid transparent}
+::-webkit-scrollbar-button{display:none;height:0;width:0}
+::-webkit-scrollbar-corner{background:transparent}
+.sheet{scrollbar-width:none}.sheet::-webkit-scrollbar{display:none}
+html{scrollbar-color:var(--line) var(--bg)}
+</style>
+</head>
+<body>
+
+<div class="loader"><div class="dots"><div class="dot"></div><div class="dot"></div></div></div>
+<div class="cursor"></div>
+
+<nav>
+  <a href="#" class="logo"><i><b></b><b></b></i>Tandem</a>
+  <ul><li><a href="#how">How it works</a></li><li><a href="#match">Try a match</a></li><li><a href="#stories">Stories</a></li><li><a href="#free">It's free</a></li></ul>
+  <a href="app/" class="btn"><span>Get matched</span></a>
+</nav>
+
+<header class="hero">
+  <canvas id="gl"></canvas>
+  <div class="hero-inner">
+    <div class="eyebrow">2,418 people matched this week</div>
+    <h1><span class="line"><span>Goals are</span></span><span class="line"><span>easier with</span></span><span class="line"><span><em>someone</em> waiting.</span></span></h1>
+    <p>Built for ADHD brains. Tandem pairs you with one partner who has ADHD too and shares your goal and pace. Small steps, streaks that forgive bad weeks, and company when starting is hard.</p>
+    <div class="hero-ctas">
+      <a href="app/" class="btn"><span>Find my partner →</span></a>
+      <a href="#how" class="btn ghost"><span>See how it works</span></a>
+    </div>
+  </div>
+  <div class="scroll-hint">SCROLL</div>
+</header>
+
+<div class="marquee"><div class="marquee-track">
+  <span>Run a marathon</span><span>Ship the side project</span><span>Write 500 words a day</span><span>Learn Spanish</span><span>Quit doomscrolling</span><span>Save for a house</span><span>Meditate daily</span><span>Finish the thesis</span>
+</div></div>
+
+<section class="statement">
+  <div class="label">Why a partner</div>
+  <h2 id="statement">People who commit to a specific person are up to 95% more likely to hit their goal. Not an app. Not a streak counter. A human who notices when you skip.</h2>
+</section>
+
+<section class="how" id="how">
+  <div class="how-pin">
+    <div class="how-steps">
+      <div class="step"><div class="num">01 / 04</div><h3>Tell us what you're chasing.</h3><p>Pick a goal, how often you want to check in, and whether you want a gentle cheerleader or a tough coach.</p></div>
+      <div class="step"><div class="num">02 / 04</div><h3>We find your counterpart.</h3><p>Our matching weighs goal overlap, timezone, schedule and communication style. Most people are matched in under 48 hours.</p></div>
+      <div class="step"><div class="num">03 / 04</div><h3>Meet, then commit.</h3><p>A 15-minute intro call. If it clicks, you both sign a lightweight pact: what you'll do, and when you'll report back.</p></div>
+      <div class="step"><div class="num">04 / 04</div><h3>Show up for each other.</h3><p>Weekly check-ins, a shared streak, and nudges when one of you goes quiet. Rematch any time, no questions.</p></div>
+      <div class="progress"><i><b></b></i><i><b></b></i><i><b></b></i><i><b></b></i></div>
+    </div>
+    <div class="how-visual">
+      <div class="orbit o1"></div><div class="orbit o2"></div><div class="orbit o3"></div>
+      <div class="link-line" id="linkLine"></div>
+      <div class="node you" id="nodeYou">Y</div>
+      <div class="node them" id="nodeThem">?</div>
+      <div class="chip" id="chip1" style="top:8%;left:4%">🏃 Marathon · 4x/week</div>
+      <div class="chip" id="chip2" style="bottom:12%;right:0">🕒 GMT+1 · mornings</div>
+      <div class="chip" id="chip3" style="top:44%;right:-2%">🤝 Pact signed</div>
+      <div class="chip" id="chip4" style="bottom:4%;left:10%">🔥 12-week streak</div>
+    </div>
+  </div>
+</section>
+
+<section class="matcher" id="match">
+  <div class="label">Try it — live preview</div>
+  <h2>Build your <em>match</em>.</h2>
+  <div class="matcher-grid">
+    <div>
+      <div class="q"><h4><b>01</b> What's the goal?</h4>
+        <div class="opts" data-q="goal">
+          <button class="opt on" data-v="fitness">Fitness</button><button class="opt" data-v="writing">Writing</button><button class="opt" data-v="code">Side project</button><button class="opt" data-v="lang">Language</button><button class="opt" data-v="money">Finances</button>
+        </div></div>
+      <div class="q"><h4><b>02</b> Check-in rhythm</h4>
+        <div class="opts" data-q="freq">
+          <button class="opt" data-v="daily">Daily</button><button class="opt on" data-v="weekly">Weekly</button><button class="opt" data-v="biweekly">Every two weeks</button>
+        </div></div>
+      <div class="q"><h4><b>03</b> Partner style</h4>
+        <input type="range" class="range" id="style" min="0" max="100" value="55">
+        <div class="range-labels"><span>Soft landing</span><span>Direct</span></div></div>
+      <div class="q"><h4><b>04</b> Best time to talk</h4>
+        <div class="opts" data-q="time">
+          <button class="opt on" data-v="morning">Mornings</button><button class="opt" data-v="lunch">Lunch</button><button class="opt" data-v="evening">Evenings</button>
+        </div></div>
+    </div>
+    <div class="card-wrap">
+      <div class="seg" id="seg"><i></i><button class="on" data-side="front">Your match</button><button data-side="back">How you'll appear</button></div>
+      <div class="flip" id="flip">
+      <div class="match-card" id="card">
+        <div class="mc-top">
+          <div><div class="mc-tag">Your top match</div><div style="font-size:13px;color:var(--c);margin-top:6px">● Online now</div></div>
+          <div class="ring"><svg width="86" height="86"><circle cx="43" cy="43" r="38" stroke="#2a2733" stroke-width="4" fill="none"/><circle id="ringArc" cx="43" cy="43" r="38" stroke="url(#g)" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="238.8" stroke-dashoffset="238.8"/><defs><linearGradient id="g"><stop offset="0" stop-color="#ff7a4d"/><stop offset="1" stop-color="#7c6cff"/></linearGradient></defs></svg><div class="val"><span id="score">0</span>%</div></div>
+        </div>
+        <div class="mc-person"><div class="avatar" id="av">M</div><div><h5 id="pname">Maya R.</h5><small id="pmeta">Lisbon · GMT+1 · 3 partners helped</small></div></div>
+        <div class="traits" id="traits"></div>
+        <p class="quote" id="pquote"></p>
+        <div class="mc-actions"><a href="app/" class="btn"><span>Request intro</span></a><button class="btn ghost" id="shuffle"><span>↻ Another</span></button></div>
+      </div>
+      <div class="match-card you" id="youCard" aria-hidden="true">
+        <div class="mc-top"><div><div class="mc-tag">What your match sees</div><div style="font-size:13px;color:var(--a);margin-top:6px">✎ Tap to edit</div></div></div>
+        <div class="mc-person"><div class="avatar" id="yAv">+</div><div style="flex:1;min-width:0"><input class="name-in" id="yName" placeholder="Your first name" maxlength="20" aria-label="Your first name"><small id="ymeta">Add a photo once you sign up</small></div></div>
+        <div class="traits" id="ytraits"></div>
+        <textarea class="bio-in" id="yBio" placeholder="A line about you, e.g. &quot;Morning runner, terrible at rest days.&quot;" maxlength="120" aria-label="A line about you"></textarea>
+        <p class="you-note">You choose what's shown. Email and contact details stay private until you share them.</p>
+      </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="stats">
+    <div class="stat reveal"><div class="n"><span data-count="87">0</span><sup>%</sup></div><p>of pairs still checking in after 3 months</p></div>
+    <div class="stat reveal"><div class="n"><span data-count="41">0</span><sup>h</sup></div><p>median time from sign-up to match</p></div>
+    <div class="stat reveal"><div class="n"><span data-count="3.2">0</span><sup>×</sup></div><p>more goals completed vs. going solo</p></div>
+    <div class="stat reveal"><div class="n"><span data-count="68">0</span><sup>k</sup></div><p>active partnerships in 94 countries</p></div>
+  </div>
+</section>
+
+<section class="stories" id="stories">
+  <div class="stories-pin">
+    <div class="stories-head"><div><div class="label">Stories</div><h2>Pairs that <em>stuck</em>.</h2></div><p class="pmute" style="max-width:320px">Scroll to meet a few of the partnerships that turned "someday" into done.</p></div>
+    <div class="stories-track">
+      <div class="story"><div><div class="streak">🔥 34-week streak</div><blockquote>"I'd started and quit running six times. Knowing Dev would ask on Sunday is the only reason I got out the door in February."</blockquote></div><div class="pair"><div class="avs"><i style="background:#ff7a4d">A</i><i style="background:#7c6cff">D</i></div><small><b>Ana & Dev</b>First half marathon, Oct</small></div></div>
+      <div class="story"><div><div class="streak">🔥 21-week streak</div><blockquote>"We write in different genres, on different continents. Every Friday we swap word counts. My novel draft is done."</blockquote></div><div class="pair"><div class="avs"><i style="background:#3ee0b0">K</i><i style="background:#ff7a4d">J</i></div><small><b>Kofi & Jules</b>92,000 words, finished</small></div></div>
+      <div class="story"><div><div class="streak">🔥 18-week streak</div><blockquote>"Tough-coach mode was exactly what I asked for. Priya doesn't accept 'busy week' as an answer. The app launched in May."</blockquote></div><div class="pair"><div class="avs"><i style="background:#7c6cff">P</i><i style="background:#3ee0b0">S</i></div><small><b>Priya & Sam</b>Shipped a side project</small></div></div>
+      <div class="story"><div><div class="streak">🔥 52-week streak</div><blockquote>"A year of Tuesday calls, all in Spanish. We started at A2. Last month we argued about football for an hour."</blockquote></div><div class="pair"><div class="avs"><i style="background:#ff7a4d">L</i><i style="background:#7c6cff">T</i></div><small><b>Lena & Tomás</b>A2 → B2 Spanish</small></div></div>
+      <div class="story"><div><div class="streak">🔥 26-week streak</div><blockquote>"Money was the thing I never talked about. Having one person to be honest with cleared $11k of card debt."</blockquote></div><div class="pair"><div class="avs"><i style="background:#3ee0b0">R</i><i style="background:#ff7a4d">N</i></div><small><b>Rae & Noor</b>Debt-free in 6 months</small></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="free">
+  <div class="label">Free, for everyone</div>
+  <h2>No plans. No paywall. <em>Just a partner</em>.</h2>
+  <div class="plans">
+    <div class="plan reveal"><h4>Matching</h4><div class="price">∞</div><p class="pmute">Find someone who shares your goal, timezone and pace.</p><ul><li>Matched in under 48 hours</li><li>Rematch whenever you need</li><li>Any goal, any size</li></ul></div>
+    <div class="plan feat reveal"><h4>Showing up</h4><div class="price">Weekly</div><p class="pmute">Tools that keep both of you honest, all included.</p><ul><li>Pact builder & goal tracker</li><li>Check-in reminders & nudges</li><li>Shared streaks</li><li>Video check-ins</li></ul><a href="app/" class="btn"><span>Get matched</span></a></div>
+    <div class="plan reveal"><h4>Groups</h4><div class="price">Together</div><p class="pmute">Run a matching pool for your team, class or club.</p><ul><li>Private matching pools</li><li>Pair people up in one go</li><li>Anonymous group progress</li></ul></div>
+  </div>
+</section>
+
+<section class="cta" id="join">
+  <h2 class="cta-title"><span class="line"><span>Stop going</span></span><span class="line"><span><em>it alone.</em></span></span></h2>
+  <form id="form">
+    <div class="field"><textarea id="goal" placeholder=" " required></textarea><label for="goal">What goal do you want a partner for?</label></div>
+    <div class="row2">
+      <div class="field"><input id="name" placeholder=" " required><label for="name">First name</label></div>
+      <div class="field"><input id="email" type="email" placeholder=" " required><label for="email">Email</label></div>
+    </div>
+    <button class="btn" type="submit"><span>Find my partner →</span></button>
+  </form>
+  <p class="sent" id="sent">You're in the queue. We'll email your match soon ✦</p>
+</section>
+
+<footer><span>© 2026 Tandem</span><span>Made for people who keep promising "next Monday".</span></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+gsap.registerPlugin(ScrollTrigger);
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- cursor ---------- */
+const cur = document.querySelector('.cursor');
+const cx = gsap.quickTo(cur,'x',{duration:.35,ease:'power3'}), cy = gsap.quickTo(cur,'y',{duration:.35,ease:'power3'});
+addEventListener('mousemove', e => { cx(e.clientX); cy(e.clientY); });
+document.querySelectorAll('a,button,.opt,.story,input,textarea').forEach(el=>{
+  el.addEventListener('mouseenter',()=>cur.classList.add('hover'));
+  el.addEventListener('mouseleave',()=>cur.classList.remove('hover'));
+});
+
+/* magnetic buttons */
+document.querySelectorAll('.btn').forEach(b=>{
+  b.addEventListener('mousemove',e=>{const r=b.getBoundingClientRect();gsap.to(b,{x:(e.clientX-r.left-r.width/2)*.25,y:(e.clientY-r.top-r.height/2)*.35,duration:.4})});
+  b.addEventListener('mouseleave',()=>gsap.to(b,{x:0,y:0,duration:.6,ease:'elastic.out(1,.4)'}));
+});
+
+/* ---------- three.js hero: two particle "people" drawn together ---------- */
+(function(){
+  const canvas = document.getElementById('gl');
+  const renderer = new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(50,1,.1,100); camera.position.z = 14;
+
+  const N = 2600;
+  function cluster(color, offset){
+    const g = new THREE.BufferGeometry(), pos = new Float32Array(N*3), seed = new Float32Array(N);
+    for(let i=0;i<N;i++){
+      const r = 2.2*Math.cbrt(Math.random()), t = Math.random()*Math.PI*2, p = Math.acos(2*Math.random()-1);
+      pos[i*3]=r*Math.sin(p)*Math.cos(t); pos[i*3+1]=r*Math.sin(p)*Math.sin(t); pos[i*3+2]=r*Math.cos(p); seed[i]=Math.random();
+    }
+    g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+    g.setAttribute('seed',new THREE.BufferAttribute(seed,1));
+    const m = new THREE.ShaderMaterial({
+      transparent:true, depthWrite:false, blending:THREE.AdditiveBlending,
+      uniforms:{uTime:{value:0},uColor:{value:new THREE.Color(color)},uPulse:{value:0}},
+      vertexShader:`attribute float seed;uniform float uTime;uniform float uPulse;varying float vA;
+        void main(){vec3 p=position;float n=sin(uTime*.8+seed*20.)*.18;p+=normalize(p)*n*(1.+uPulse);
+        vec4 mv=modelViewMatrix*vec4(p,1.);gl_PointSize=(2.+seed*3.)*(10./-mv.z);gl_Position=projectionMatrix*mv;vA=.35+seed*.65;}`,
+      fragmentShader:`uniform vec3 uColor;varying float vA;void main(){float d=length(gl_PointCoord-.5);if(d>.5)discard;gl_FragColor=vec4(uColor,(1.-d*2.)*vA*.8);}`
+    });
+    const pts = new THREE.Points(g,m); pts.position.x = offset; scene.add(pts); return pts;
+  }
+  const A = cluster('#ff7a4d', 3.2), B = cluster('#7c6cff', 7.2);
+
+  // bridge of particles between them
+  const bN=400, bg=new THREE.BufferGeometry(), bp=new Float32Array(bN*3);
+  bg.setAttribute('position',new THREE.BufferAttribute(bp,3));
+  const bridge=new THREE.Points(bg,new THREE.PointsMaterial({color:0x3ee0b0,size:.06,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false}));
+  scene.add(bridge);
+
+  function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();
+    const mobile = w<800; A.userData.base = mobile?-1.6:2.4; B.userData.base = mobile?1.6:6.4; camera.position.z = mobile?16:14;}
+  addEventListener('resize',resize); resize();
+
+  const state={pull:0}; let mx=0,my=0;
+  addEventListener('mousemove',e=>{mx=e.clientX/innerWidth-.5;my=e.clientY/innerHeight-.5});
+  // intro: clusters drift together
+  gsap.to(state,{pull:1,duration:3,ease:'power3.inOut',delay:.8});
+  // on scroll: separate & fade
+  const sc={v:0}; gsap.to(sc,{v:1,ease:'none',scrollTrigger:{trigger:'.hero',start:'top top',end:'bottom top',scrub:true}});
+
+  const clock=new THREE.Clock();
+  (function tick(){
+    const t=clock.getElapsedTime();
+    const mid=(A.userData.base+B.userData.base)/2, gap=(B.userData.base-A.userData.base)/2;
+    const d = gap*(1.6-state.pull*.55) + sc.v*3;
+    A.position.x = mid-d + Math.sin(t*.5)*.15; B.position.x = mid+d + Math.cos(t*.5)*.15;
+    A.position.y = Math.sin(t*.7)*.25; B.position.y = Math.cos(t*.6)*.25 - sc.v*2;
+    A.rotation.y=t*.12; B.rotation.y=-t*.1; A.rotation.x=t*.05;
+    A.material.uniforms.uTime.value=B.material.uniforms.uTime.value=t;
+    A.material.uniforms.uPulse.value=B.material.uniforms.uPulse.value=.5+.5*Math.sin(t*2.)*state.pull;
+    // bridge arc
+    for(let i=0;i<bN;i++){const f=((i/bN)+t*.08)%1, x=A.position.x+1.4+(B.position.x-A.position.x-2.8)*f;
+      bp[i*3]=x; bp[i*3+1]=(A.position.y+(B.position.y-A.position.y)*f)+Math.sin(f*Math.PI)*.9+Math.sin(i*12.9+t*2)*.08; bp[i*3+2]=Math.cos(i*7.3+t)*.12;}
+    bg.attributes.position.needsUpdate=true;
+    bridge.material.opacity=state.pull*.9*(1-sc.v);
+    scene.rotation.y += (mx*.35-scene.rotation.y)*.05; scene.rotation.x += (my*.25-scene.rotation.x)*.05;
+    canvas.style.opacity = 1-sc.v*.8;
+    renderer.render(scene,camera); requestAnimationFrame(tick);
+  })();
+})();
+
+/* ---------- intro timeline ---------- */
+const intro = gsap.timeline();
+intro.to('.loader .dot:nth-child(1)',{x:18,duration:.5,ease:'power2.inOut'})
+     .to('.loader .dot:nth-child(2)',{x:-18,duration:.5,ease:'power2.inOut'},'<')
+     .to('.loader .dot',{scale:40,opacity:0,duration:.7,ease:'power3.in'})
+     .to('.loader',{opacity:0,duration:.3,onComplete:()=>document.querySelector('.loader').remove()},'-=.2')
+     .from('.hero h1 .line>span',{yPercent:110,duration:1.1,stagger:.1,ease:'power4.out'},'-=.2')
+     .from('.eyebrow,.hero p,.hero-ctas,nav',{y:20,opacity:0,duration:.8,stagger:.1,ease:'power3.out'},'-=.7');
+
+/* ---------- marquee ---------- */
+const track=document.querySelector('.marquee-track'); track.innerHTML+=track.innerHTML;
+const mq=gsap.to(track,{xPercent:-50,duration:30,ease:'none',repeat:-1});
+ScrollTrigger.create({onUpdate:s=>{gsap.to(mq,{timeScale:1+Math.min(Math.abs(s.getVelocity())/300,6)*(s.direction),duration:.2,overwrite:true});gsap.to(mq,{timeScale:1,duration:1,delay:.2})}});
+
+/* ---------- statement word reveal ---------- */
+const st=document.getElementById('statement');
+st.innerHTML=st.textContent.split(' ').map(w=>`<span class="w">${w}</span>`).join('');
+gsap.to('#statement .w',{opacity:1,stagger:.05,ease:'none',scrollTrigger:{trigger:'.statement',start:'top 70%',end:'bottom 55%',scrub:true}});
+
+/* ---------- how it works: pinned sequence ---------- */
+const steps=gsap.utils.toArray('.step'), bars=gsap.utils.toArray('.progress b');
+const vis=document.querySelector('.how-visual');
+function place(){const s=vis.offsetWidth; return s;}
+gsap.set('#nodeYou',{left:'50%',top:'50%',xPercent:-50,yPercent:-50});
+gsap.set('#nodeThem',{left:'50%',top:'50%',xPercent:-50,yPercent:-50,scale:0});
+const how=gsap.timeline({scrollTrigger:{trigger:'.how',start:'top top',end:'+=3200',pin:'.how-pin',scrub:.8}});
+gsap.set(steps[0],{opacity:1});
+how.to(bars[0],{width:'100%',duration:1})
+   .to('#chip1',{opacity:1,y:-6,duration:.4},0.2)
+   .to(steps[0],{opacity:0,y:-30,duration:.3})
+   .fromTo(steps[1],{opacity:0,y:30},{opacity:1,y:0,duration:.3})
+   .to('#nodeYou',{x:()=>-vis.offsetWidth*.3,duration:.6},'<')
+   .to('#nodeThem',{scale:1,x:()=>vis.offsetWidth*.3,duration:.6},'<')
+   .to('.orbit',{rotate:120,scale:.95,duration:1,stagger:.1},'<')
+   .to('#chip2',{opacity:1,y:-6,duration:.4},'<.3')
+   .to(bars[1],{width:'100%',duration:1},'<')
+   .to('#nodeThem',{onStart:()=>document.getElementById('nodeThem').textContent='M',onReverseComplete:()=>document.getElementById('nodeThem').textContent='?',duration:.01})
+   .to(steps[1],{opacity:0,y:-30,duration:.3})
+   .fromTo(steps[2],{opacity:0,y:30},{opacity:1,y:0,duration:.3})
+   .set('#linkLine',{left:()=>vis.offsetWidth*.2,top:'50%',width:()=>vis.offsetWidth*.6})
+   .to('#linkLine',{scaleX:1,duration:.6},'<')
+   .to('#chip3',{opacity:1,y:-6,duration:.4},'<.2')
+   .to(bars[2],{width:'100%',duration:1},'<')
+   .to(steps[2],{opacity:0,y:-30,duration:.3})
+   .fromTo(steps[3],{opacity:0,y:30},{opacity:1,y:0,duration:.3})
+   .to('#nodeYou',{x:()=>-vis.offsetWidth*.12,scale:1.25,duration:.6},'<')
+   .to('#nodeThem',{x:()=>vis.offsetWidth*.12,scale:1.25,duration:.6},'<')
+   .to('#linkLine',{left:()=>vis.offsetWidth*.38,width:()=>vis.offsetWidth*.24,duration:.6},'<')
+   .to('.orbit',{rotate:300,scale:1.05,borderColor:'#ff7a4d55',duration:1},'<')
+   .to('#chip4',{opacity:1,y:-6,duration:.4},'<.2')
+   .to(bars[3],{width:'100%',duration:1},'<');
+
+/* ---------- matcher ---------- */
+const people={
+  fitness:[['Maya R.','Lisbon · GMT+1','#ff7a4d','"Training for Berlin. I send my Strava every Sunday and expect yours."'],['Theo K.','Berlin · GMT+1','#7c6cff','"Former couch-to-5k dropout. Now on my third marathon block."']],
+  writing:[['Jules A.','Montréal · GMT-5','#3ee0b0','"Swapping word counts every Friday. I\'ll ask about the chapter you\'re avoiding."'],['Iris P.','Dublin · GMT+0','#ff7a4d','"Poet by night, finishing a memoir by spring."']],
+  code:[['Sam O.','Austin · GMT-6','#7c6cff','"Shipping a tiny SaaS. Demo something every week, even if it\'s ugly."'],['Aiko N.','Osaka · GMT+9','#3ee0b0','"Indie game dev. Let\'s both hit launch this year."']],
+  lang:[['Tomás V.','Valencia · GMT+1','#ff7a4d','"Native Spanish, learning English. Half the call each way."'],['Chen L.','Toronto · GMT-5','#7c6cff','"Working toward JLPT N3. Flashcards daily, calls weekly."']],
+  money:[['Noor H.','London · GMT+0','#3ee0b0','"Paid off $14k. Happy to be the one you\'re honest with."'],['Diego M.','Mexico City · GMT-6','#ff7a4d','"Saving for a first home. Monthly budget reviews, no judgment."']]
+};
+const traitMap={daily:'Daily check-ins',weekly:'Weekly check-ins',biweekly:'Bi-weekly check-ins',morning:'☀ Morning person',lunch:'🥪 Lunch-break calls',evening:'🌙 Evening calls'};
+const sel={goal:'fitness',freq:'weekly',time:'morning'}; let alt=0;
+const card=document.getElementById('card'), arc=document.getElementById('ringArc'), scoreEl=document.getElementById('score');
+function render(animate=true){
+  const [n,loc,col,q]=people[sel.goal][alt%2], style=+document.getElementById('style').value;
+  const score=Math.round(82+((style*7+sel.freq.length*3+sel.time.length*5+alt*11)%17));
+  const styleLabel=style<34?'💛 Gentle encourager':style<67?'⚖ Balanced nudger':'🔥 Tough-love coach';
+  const apply=()=>{
+    document.getElementById('pname').textContent=n; document.getElementById('pmeta').textContent=`${loc} · ${2+(n.length%5)} partners helped`;
+    const av=document.getElementById('av'); av.textContent=n[0]; av.style.background=col;
+    document.getElementById('pquote').textContent=q;
+    document.getElementById('traits').innerHTML=[traitMap[sel.freq],traitMap[sel.time],styleLabel].map(t=>`<span>${t}</span>`).join('');
+    gsap.from('#traits span',{y:10,opacity:0,stagger:.06,duration:.4});
+    const o={v:+scoreEl.textContent}; gsap.to(o,{v:score,duration:1,ease:'power2.out',onUpdate:()=>scoreEl.textContent=Math.round(o.v)});
+    gsap.to(arc,{strokeDashoffset:238.8*(1-score/100),duration:1,ease:'power2.out'});
+  };
+  if(!animate){apply();return;}
+  gsap.timeline().to(card,{rotateY:90,duration:.25,ease:'power2.in',onComplete:apply}).fromTo(card,{rotateY:-90},{rotateY:0,duration:.5,ease:'back.out(1.6)'});
+}
+document.querySelectorAll('.opts').forEach(g=>g.addEventListener('click',e=>{
+  const b=e.target.closest('.opt'); if(!b)return;
+  g.querySelectorAll('.opt').forEach(o=>o.classList.remove('on')); b.classList.add('on');
+  gsap.fromTo(b,{scale:.9},{scale:1,duration:.5,ease:'elastic.out(1,.4)'});
+  sel[g.dataset.q]=b.dataset.v; alt=0; render();
+}));
+let rt; document.getElementById('style').addEventListener('input',()=>{clearTimeout(rt);rt=setTimeout(()=>render(false),60)});
+document.getElementById('shuffle').addEventListener('click',()=>{alt++;render()});
+/* how you'll appear */
+const goalLabel={fitness:'🏃 Fitness',writing:'✍️ Writing',code:'🛠 Side project',lang:'🗣 Language',money:'💸 Finances'};
+function renderYou(){
+  const style=+document.getElementById('style').value;
+  const sl=style<34?'💛 Soft landing':style<67?'⚖ Balanced':'🎯 Direct';
+  document.getElementById('ytraits').innerHTML=[goalLabel[sel.goal],traitMap[sel.freq],traitMap[sel.time],sl].map(t=>`<span>${t}</span>`).join('');
+  const n=document.getElementById('yName').value.trim(); const av=document.getElementById('yAv');
+  av.textContent=n?n[0].toUpperCase():'+'; av.style.cssText=n?'background:var(--a);border:none;color:#000':'';
+}
+document.getElementById('yName').addEventListener('input',renderYou);
+document.querySelectorAll('.opts').forEach(g=>g.addEventListener('click',renderYou));
+document.getElementById('style').addEventListener('input',renderYou);
+const segEl=document.getElementById('seg'), segPill=segEl.querySelector('i'), flip=document.getElementById('flip');
+function moveSeg(b){segPill.style.width=b.offsetWidth+'px';segPill.style.transform=`translateX(${b.offsetLeft-4}px)`;}
+segEl.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  segEl.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));moveSeg(b);
+  const back=b.dataset.side==='back';flip.classList.toggle('back',back);
+  document.getElementById('youCard').setAttribute('aria-hidden',!back);document.getElementById('card').setAttribute('aria-hidden',back);
+  if(back){renderYou();gsap.from('#ytraits span',{y:10,opacity:0,stagger:.06,duration:.4,delay:.35});}});
+addEventListener('load',()=>moveSeg(segEl.querySelector('.on')));addEventListener('resize',()=>moveSeg(segEl.querySelector('.on')));
+renderYou();
+ScrollTrigger.create({trigger:'#match',start:'top 60%',once:true,onEnter:()=>render(false)});
+// tilt
+card.addEventListener('mousemove',e=>{if(flip.classList.contains('back'))return;const r=card.getBoundingClientRect();gsap.to(card,{rotateY:(e.clientX-r.left-r.width/2)/25,rotateX:-(e.clientY-r.top-r.height/2)/25,duration:.5})});
+card.addEventListener('mouseleave',()=>gsap.to(card,{rotateX:0,rotateY:0,duration:.8,ease:'elastic.out(1,.5)'}));
+gsap.from('.matcher',{scale:.94,borderRadius:80,scrollTrigger:{trigger:'.matcher',start:'top bottom',end:'top 30%',scrub:true}});
+gsap.from('.q',{y:40,opacity:0,stagger:.1,duration:.8,scrollTrigger:{trigger:'.matcher-grid',start:'top 75%'}});
+
+/* ---------- reveals & counters ---------- */
+gsap.utils.toArray('.reveal').forEach((el,i)=>gsap.to(el,{opacity:1,y:0,duration:1,ease:'power3.out',delay:(i%4)*.08,scrollTrigger:{trigger:el,start:'top 88%'}}));
+document.querySelectorAll('[data-count]').forEach(el=>{
+  const end=+el.dataset.count, dec=end%1?1:0, o={v:0};
+  gsap.to(o,{v:end,duration:2,ease:'power2.out',scrollTrigger:{trigger:el,start:'top 90%'},onUpdate:()=>el.textContent=o.v.toFixed(dec)});
+});
+gsap.utils.toArray('h2:not(#statement):not(.cta-title)').forEach(h=>gsap.from(h,{y:60,opacity:0,duration:1.1,ease:'power4.out',scrollTrigger:{trigger:h,start:'top 85%'}}));
+
+/* ---------- stories horizontal scroll ---------- */
+const strack=document.querySelector('.stories-track');
+gsap.to(strack,{x:()=>-(strack.scrollWidth-innerWidth),ease:'none',scrollTrigger:{trigger:'.stories',start:'top top',end:()=>'+='+(strack.scrollWidth-innerWidth),pin:'.stories-pin',scrub:1,invalidateOnRefresh:true}});
+
+/* ---------- CTA ---------- */
+gsap.from('.cta-title .line>span',{yPercent:110,duration:1.2,stagger:.12,ease:'power4.out',scrollTrigger:{trigger:'.cta',start:'top 65%'}});
+gsap.from('.cta form>*',{y:30,opacity:0,stagger:.1,duration:.8,scrollTrigger:{trigger:'.cta form',start:'top 85%'}});
+document.getElementById('form').addEventListener('submit',e=>{
+  e.preventDefault();
+  gsap.to('#form',{y:-20,opacity:0,duration:.5,onComplete:()=>{document.getElementById('form').style.display='none';const s=document.getElementById('sent');s.style.display='block';gsap.from(s,{y:20,opacity:0,duration:.8})}});
+});
+
+/* smooth anchor scroll */
+document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{const t=document.querySelector(a.getAttribute('href'));if(!t||a.getAttribute('href')==='#')return;e.preventDefault();scrollTo({top:t.getBoundingClientRect().top+scrollY,behavior:'smooth'})}));
+</script>
+</body>
+</html>
