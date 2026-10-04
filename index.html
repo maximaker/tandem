@@ -372,7 +372,7 @@ html{scrollbar-color:var(--line) var(--bg)}
 
 <script>
 // failsafe: if animations are paused (background tab) or a CDN script fails, never leave people on the loader
-setTimeout(function(){var l=document.querySelector('.loader');if(!l)return;if(window.intro&&intro.progress)intro.progress(1);l.remove();},3500);
+setTimeout(function(){var l=document.querySelector('.loader');if(!l)return;if(typeof intro!=='undefined')intro.progress(1);l.remove();},3500);
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
